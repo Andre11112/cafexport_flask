@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Registro Campesino{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-50">
+    <div class="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
+        <a href="{{ url_for('index') }}" class="text-green-700 hover:text-green-800 mb-6 inline-block">
+            &larr; Volver
+        </a>
+        
+        <div>
+            <h2 class="text-center text-3xl font-bold text-green-800">CafExport</h2>
+            <p class="mt-2 text-center text-sm text-gray-600">Registro de Campesino</p>
+        </div>
+
+        <div id="mensaje-error" class="hidden p-4 mb-4 rounded-lg bg-red-100 text-red-700"></div>
+        <div id="mensaje-exito" class="hidden p-4 mb-4 rounded-lg bg-green-100 text-green-700"></div>
+
+        <form class="mt-8 space-y-6" id="registroCampesinoForm" data-login-redirect-url="{{ url_for('campesino.login_campesino') }}">
+            <div class="rounded-md shadow-sm space-y-4">
+                <div>
+                    <input type="text" 
+                           name="nombre" 
+                           placeholder="Nombre completo" 
+                           required
+                           class="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500">
+                </div>
+                <div>
+                    <input type="text" 
+                           name="cedula" 
+                           placeholder="Cédula" 
+                           required
+                           class="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500">
+                </div>
+                <div>
+                    <input type="email" 
+                           name="email" 
+                           placeholder="Email (opcional)"
+                           class="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500">
+                </div>
+                <div>
+                    <input type="text" 
+                           name="direccion_finca" 
+                           placeholder="Dirección de la finca" 
+                           required
+                           class="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500">
+                </div>
+                <div>
+                    <input type="password" 
+                           name="password" 
+                           placeholder="Contraseña" 
+                           required
+                           class="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                </div>
+            </div>
+
+            <div>
+                <button type="submit"
+                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    Registrarse
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/registro.js') }}"></script>
+{% endblock %}
+

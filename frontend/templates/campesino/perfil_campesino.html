@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Perfil Campesino{% endblock %}
+
+{% block content %}
+<div class="flex h-screen bg-gray-50">
+    {% include "campesino/sidebar.html" %}
+    
+    <div class="flex-1 overflow-auto">
+        <header class="bg-white shadow">
+            <div class="max-w-7xl mx-auto py-6 px-4">
+                <h1 class="text-2xl font-bold text-gray-900">Mi Perfil</h1>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Información Personal -->
+            <div class="bg-white shadow rounded-lg p-6 mb-6">
+                <h2 class="text-lg font-medium mb-4">Información Personal</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nombre</label>
+                        <p class="mt-1 text-lg">{{ campesino.nombre }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Cédula</label>
+                        <p class="mt-1 text-lg">{{ campesino.cedula }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                        <p class="mt-1 text-lg">{{ campesino.email }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Fecha de Registro</label>
+                        <p class="mt-1 text-lg">{{ campesino.fecha_registro }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-lg font-medium mb-4">Estadísticas de Ventas</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Total Ventas</label>
+                        <p class="mt-1 text-2xl font-bold text-green-600">
+                            {{ "{:,.0f}".format(campesino.stats.total_ventas) }} COP
+                        </p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Kg Vendidos</label>
+                        <p class="mt-1 text-2xl font-bold text-green-600">
+                            {{ campesino.stats.total_kg }} kg
+                        </p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Ventas Realizadas</label>
+                        <p class="mt-1 text-2xl font-bold text-green-600">
+                            {{ campesino.stats.num_ventas }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

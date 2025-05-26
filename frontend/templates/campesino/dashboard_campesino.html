@@ -1,0 +1,435 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Campesino{% endblock %}
+
+{% block content %}
+<div class="flex h-screen bg-gray-50">
+    <!-- Sidebar -->
+    <div class="w-64 bg-green-800 text-white">
+        <!-- Logo -->
+        <div class="p-4">
+            <h1 class="text-2xl font-bold">CafExport</h1>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="mt-8">
+            <a href="{{ url_for('campesino.dashboard') }}" 
+               class="flex items-center px-6 py-3 {% if request.endpoint == 'campesino.dashboard' %}bg-green-900{% endif %} text-white hover:bg-green-700 rounded-l-full">
+                <i class="fas fa-home w-5 h-5 mr-3"></i>
+                Inicio
+            </a>
+            
+            <a href="{{ url_for('campesino.perfil') }}"
+               class="flex items-center px-6 py-3 {% if request.endpoint == 'campesino.perfil' %}bg-green-900{% endif %} text-white hover:bg-green-700 rounded-l-full mt-2">
+                <i class="fas fa-user w-5 h-5 mr-3"></i>
+                Perfil
+            </a>
+            
+            <a href="{{ url_for('campesino.ventas') }}"
+               class="flex items-center px-6 py-3 {% if request.endpoint == 'campesino.ventas' %}bg-green-900{% endif %} text-white hover:bg-green-700 rounded-l-full mt-2">
+                <i class="fas fa-coins w-5 h-5 mr-3"></i>
+                Ventas
+            </a>
+            
+            <a href="{{ url_for('campesino.reportes') }}"
+               class="flex items-center px-6 py-3 {% if request.endpoint == 'campesino.reportes' %}bg-green-900{% endif %} text-white hover:bg-green-700 rounded-l-full mt-2">
+                <i class="fas fa-chart-bar w-5 h-5 mr-3"></i>
+                Reportes
+            </a>
+        </nav>
+
+        <!-- Cerrar Sesión Button -->
+        <div class="absolute bottom-0 w-64 p-4">
+            <a href="{{ url_for('logout') }}" 
+               class="flex items-center px-4 py-2 text-white hover:bg-green-700 rounded">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                Cerrar Sesión
+            </a>
+        </div>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div class="flex-1 overflow-auto">
+        <header class="bg-white shadow">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold text-green-800">Bienvenido, {{ campesino.nombre }}</h2>
+                    <p class="text-sm text-gray-600">{{ campesino.get('finca', 'Sin finca registrada') }}</p>
+                </div>
+                <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    Registrar Venta
+                </button>
+            </div>
+        </header>
+
+        <!-- Contenido del Dashboard -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Tarjetas de estadísticas -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Total Ventas -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-gray-500 text-sm font-medium mb-2">Total Ventas</h3>
+                    <p class="text-3xl font-bold text-green-800">
+                        $ {{ "{:,.0f}".format(stats.total_ventas | default(0)) }} COP
+                    </p>
+                    
+                </div>
+
+                <!-- Meta Mensual -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-gray-500 text-sm font-medium mb-2">Meta Mensual</h3>
+                    <div class="relative pt-1">
+                        <div class="flex mb-2 items-center justify-between">
+                            <div class="text-3xl font-bold text-green-800">75%</div>
+                        </div>
+                        <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-green-200">
+                            <div style="width:75%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Precio del Café por Kg -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-gray-500 text-sm font-medium mb-2">Precio del Café por Carga (125kg)</h3>
+                    <p class="text-3xl font-bold text-green-800" id="precio-cafe-carga">
+                        -- COP
+                    </p>
+                    <p class="text-sm text-gray-600" id="fecha-precio-carga">Actualizado recientemente</p>
+                </div>
+
+                <!-- Precio de la Pasilla -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-gray-500 text-sm font-medium mb-2">Precio de la Pasilla (Arroba)</h3>
+                    <p class="text-3xl font-bold text-green-800" id="precio-pasilla">
+                        -- COP
+                    </p>
+                    <p class="text-sm text-gray-600" id="fecha-precio-pasilla">Actualizado recientemente</p>
+                </div>
+            </div>
+
+            <!-- Tabla de Ventas Recientes -->
+            <div class="bg-white shadow rounded-lg mb-8">
+                <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Ventas Recientes</h3>
+                    {# Asumo que el backend enviará el número total de ventas recientes en stats.total_ventas_recientes #}
+                    <p class="mt-1 text-sm text-gray-500">Has realizado {{ stats.total_ventas_recientes | default(0) }} ventas en los últimos 2 meses</p>
+                </div>
+
+                <div class="bg-white overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Fecha
+                                </th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Comprador
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Tipo
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Cantidad
+                                </th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Total
+                                </th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Estado
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Acciones
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for venta in ventas_recientes %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ venta.fecha | default('N/A') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ venta.comprador | default('Desconocido') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                                        {{ venta.tipo_cafe | default('N/A') }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                                    {{ venta.cantidad | default(0) }} kg
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                                    $ {{ "{:,.0f}".format(venta.total | default(0)) }} COP
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                                        {{ venta.estado | default('Pendiente') }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <button class="text-gray-400 hover:text-gray-600"><i class="fas fa-ellipsis-v"></i></button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="px-6 py-4 text-center text-gray-500">No hay ventas recientes disponibles.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Sección de Precios Actuales -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Precios Actuales del Mercado</h3>
+                    <p class="mt-1 text-sm text-gray-500" id="fecha-precios-mercado">Precios actualizados al 18 de Mayo, 2025</p>
+                </div>
+
+                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Café Arabico -->
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-900 mb-4">Café Arabico</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Precio por Kg</span>
+                                <span class="font-medium" id="precio-arabico-kg">-- COP</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Precio por Carga (125kg)</span>
+                                <span class="font-medium" id="precio-arabico-carga">-- COP</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pasilla -->
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-900 mb-4">Pasilla</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Precio por Kg (Arroba)</span>
+                                <span class="font-medium" id="precio-pasilla-arroba">-- COP</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Precio por Kg</span>
+                                <span class="font-medium" id="precio-pasilla-kg">-- COP</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal de Registro de Venta -->
+<div id="registroVentaModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Registrar Nueva Venta</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500">Ingrese los detalles de su venta de café</p>
+
+                <!-- Formulario -->
+                <form id="formRegistroVenta" class="mt-4 space-y-4">
+                    <div>
+                        <label for="cantidad" class="block text-sm font-medium text-gray-700 text-left">Cantidad (kg)</label>
+                        <input type="number" name="cantidad" id="cantidad" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label for="tipo_cafe" class="block text-sm font-medium text-gray-700 text-left">Tipo de Café</label>
+                        <select id="tipo_cafe" name="tipo_cafe" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm px-3 py-2" required>
+                            <option value="">Seleccione un tipo</option>
+                            <option value="pasilla">Pasilla</option>
+                            <option value="cafe_arabico">Cafe Arabico</option>
+                            <!-- Añadir más opciones según sea necesario -->
+                        </select>
+                    </div>
+                    <div>
+                        <label for="precio_kg" class="block text-sm font-medium text-gray-700 text-left">Precio (COP/kg)</label>
+                        <input type="number" name="precio_kg" id="precio_kg" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm px-3 py-2" required>
+                    </div>
+                </form>
+            </div>
+
+            <div class="items-center px-4 py-3">
+                <button id="registrarVentaBtnModal" class="px-4 py-2 bg-green-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    Registrar Venta
+                </button>
+            </div>
+        </div>
+        <!-- Botón de cerrar -->
+        <span class="absolute top-0 right-0 p-4 cursor-pointer" id="cerrarModalBtn">
+            <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </span>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const openModalBtn = document.querySelector('button.bg-green-600'); // Botón 'Registrar Venta'
+        const modal = document.getElementById('registroVentaModal');
+        const closeModalBtn = document.getElementById('cerrarModalBtn');
+
+        // Mostrar modal
+        openModalBtn.addEventListener('click', function() {
+            modal.classList.remove('hidden');
+        });
+
+        // Ocultar modal al hacer clic en la 'x' o fuera del modal
+        closeModalBtn.addEventListener('click', function() {
+            modal.classList.add('hidden');
+        });
+
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+
+        // Aquí iría la lógica para enviar el formulario (puedes usar fetch API)
+        const formRegistroVenta = document.getElementById('formRegistroVenta');
+        const registrarVentaBtnModal = document.getElementById('registrarVentaBtnModal');
+
+        registrarVentaBtnModal.addEventListener('click', function() {
+            // Validar formulario si es necesario
+            if (formRegistroVenta.checkValidity()) {
+                const formData = new FormData(formRegistroVenta);
+                const data = Object.fromEntries(formData.entries());
+
+                // Debes obtener el token JWT. Esto dependerá de cómo lo almacenes en el frontend (ej. localStorage)
+                const jwtToken = localStorage.getItem('access_token'); // Reemplaza 'access_token' con la clave que uses
+
+                fetch('/api/ventas', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + jwtToken // Envía el token JWT
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        // Manejar errores HTTP
+                        return response.json().then(err => { throw new Error(err.error || 'Error al registrar la venta'); });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Success:', data);
+                    alert(data.mensaje || 'Venta registrada con éxito');
+                    // Cerrar modal y actualizar la lista de ventas si es necesario
+                    modal.classList.add('hidden');
+                    // Opcional: Recargar la página o actualizar la tabla de ventas
+                    // window.location.reload();
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert('Error al registrar la venta: ' + error.message);
+                    // Mostrar mensaje de error al usuario
+                });
+
+            } else {
+                // Mostrar mensajes de validación del navegador
+                formRegistroVenta.reportValidity();
+            }
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Función para obtener y mostrar los precios del café
+        function fetchPreciosCafe() {
+            fetch('http://127.0.0.1:5000/api/precios_cafe')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al obtener precios del café');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Actualizar los elementos en el HTML con los precios obtenidos
+                    const precioCafeCargaElement = document.getElementById('precio-cafe-carga');
+                    const precioPasillaElement = document.getElementById('precio-pasilla');
+                    const fechaPrecioCargaElement = document.getElementById('fecha-precio-carga');
+                    const fechaPrecioPasillaElement = document.getElementById('fecha-precio-pasilla');
+
+                    if (precioCafeCargaElement) {
+                        // Eliminar caracteres no numéricos (como puntos y $) y convertir a número para formatear
+                        const precioCarga = parseFloat(data.precio_pergamino.replace(/[^0-9]/g, ''));
+                        precioCafeCargaElement.innerText = `$${precioCarga.toLocaleString('es-CO')}`;
+                    }
+
+                    if (precioPasillaElement) {
+                        // Eliminar caracteres no numéricos (como puntos y $) y convertir a número para formatear
+                        const precioPasilla = parseFloat(data.precio_pasilla.replace(/[^0-9]/g, ''));
+                        precioPasillaElement.innerText = `$${precioPasilla.toLocaleString('es-CO')}`;
+                    }
+
+                    // Actualizar fechas (si se logra extraer de la web o usar la del backend)
+                    if (fechaPrecioCargaElement) {
+                        // Puedes intentar parsear la fecha si la obtienes de la web
+                        fechaPrecioCargaElement.innerText = `Actualizado al ${new Date(data.fecha_actualizacion).toLocaleDateString()}`;
+                    }
+                    if (fechaPrecioPasillaElement) {
+                        fechaPrecioPasillaElement.innerText = `Actualizado al ${new Date(data.fecha_actualizacion).toLocaleDateString()}`;
+                    }
+
+                    // Actualizar sección de Precios Actuales del Mercado
+                    const fechaPreciosMercadoElement = document.getElementById('fecha-precios-mercado');
+                    const precioArabicoKgElement = document.getElementById('precio-arabico-kg');
+                    const precioArabicoCargaElement = document.getElementById('precio-arabico-carga');
+                    const precioPasillaArrobaElement = document.getElementById('precio-pasilla-arroba');
+                    const precioPasillaKgElement = document.getElementById('precio-pasilla-kg');
+
+                    if (fechaPreciosMercadoElement && data.fecha_actualizacion) {
+                         fechaPreciosMercadoElement.innerText = `Precios actualizados al ${new Date(data.fecha_actualizacion).toLocaleDateString()}`;
+                    }
+
+                    // Usar los valores directamente del backend
+                    if (precioArabicoKgElement && data.precio_pergamino !== undefined) {
+                         precioArabicoKgElement.innerText = data.precio_pergamino + ' COP';
+                    }
+                     if (precioArabicoCargaElement && data.precio_pergamino !== undefined) {
+                         // El precio de pergamino es por carga, mostrar el mismo valor
+                         precioArabicoCargaElement.innerText = data.precio_pergamino + ' COP';
+                    }
+
+                    if (precioPasillaArrobaElement && data.precio_pasilla !== undefined) {
+                         // El precio de pasilla es por arroba, mostrar el mismo valor
+                         precioPasillaArrobaElement.innerText = data.precio_pasilla + ' COP';
+                    }
+                     if (precioPasillaKgElement && data.precio_pasilla !== undefined) {
+                         // Podríamos intentar calcular el precio por Kg aquí si el precio de pasilla es por arroba (12.5kg)
+                         // Pero para simplificar como pediste, mostraremos el precio por arroba aquí también por simplicidad.
+                         // Vamos a mostrar el precio por arroba aquí también por simplicidad.
+                         precioPasillaKgElement.innerText = data.precio_pasilla + ' COP';
+                    }
+
+                })
+                .catch(error => {
+                    console.error('Error fetching coffee prices:', error);
+                    // Opcional: Mostrar un mensaje de error en la interfaz
+                    const precioCafeCargaElement = document.getElementById('precio-cafe-carga');
+                    const precioPasillaElement = document.getElementById('precio-pasilla');
+                    if (precioCafeCargaElement) precioCafeCargaElement.innerText = 'Error';
+                    if (precioPasillaElement) precioPasillaElement.innerText = 'Error';
+                });
+        }
+
+        // Llamar a la función al cargar la página
+        fetchPreciosCafe();
+    });
+</script>
+{% endblock %}

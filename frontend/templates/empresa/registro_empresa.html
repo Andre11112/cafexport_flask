@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+        <a href="{{ url_for('index') }}" class="text-green-700 hover:text-green-800 mb-6 inline-block">
+            &larr; Volver
+        </a>
+        
+        <h1 class="text-3xl font-bold text-green-800 text-center mb-2">CafExport</h1>
+        <p class="text-green-600 text-center mb-6">Registro de Empresa</p>
+
+        <div id="mensaje-error" class="hidden p-4 mb-4 rounded-lg bg-red-100 text-red-700"></div>
+        <div id="mensaje-exito" class="hidden p-4 mb-4 rounded-lg bg-green-100 text-green-700"></div>
+
+        <form id="registroForm" class="space-y-4" data-login-redirect-url="{{ url_for('empresa.login_empresa') }}">
+            <div>
+                <input type="text" 
+                       name="nombre" 
+                       placeholder="Nombre de la empresa" 
+                       required
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div>
+                <input type="text" 
+                       name="nit" 
+                       placeholder="NIT" 
+                       required
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+             <div>
+                <input type="text" 
+                       name="direccion_empresa" 
+                       placeholder="Dirección de la empresa" 
+                       required
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div>
+                <input type="email" 
+                       name="email" 
+                       placeholder="Email" 
+                       required
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div>
+                <input type="password" 
+                       name="password" 
+                       placeholder="Contraseña" 
+                       required
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <button type="submit" 
+                    class="w-full bg-green-700 text-white py-3 rounded-lg hover:bg-green-800 transition duration-200">
+                Registrarse
+            </button>
+        </form>
+
+        <p class="text-center mt-6 text-gray-600">
+            ¿Ya tienes una cuenta? 
+            <a href="{{ url_for('empresa.login_empresa') }}" class="text-green-700 hover:text-green-800">
+                Inicia sesión
+            </a>
+        </p>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/registro.js') }}"></script>
+{% endblock %}

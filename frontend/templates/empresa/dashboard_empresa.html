@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Empresa{% endblock %}
+
+{% block content %}
+<div class="flex h-screen bg-gray-50">
+    <!-- Sidebar -->
+    <div class="w-64 bg-green-800 text-white">
+        <div class="p-4">
+            <h1 class="text-2xl font-bold">CafExport</h1>
+        </div>
+        
+        <!-- Navigation Menu -->
+        <nav class="mt-8">
+            <a href="{{ url_for('empresa.dashboard') }}" 
+               class="flex items-center px-6 py-3 {% if request.endpoint == 'empresa.dashboard' %}bg-green-900{% endif %} text-white hover:bg-green-700 rounded-l-full">
+                <i class="fas fa-home w-5 h-5 mr-3"></i>
+                Inicio
+            </a>
+            
+            <a href="{{ url_for('empresa.compras_empresa') }}"
+               class="flex items-center px-6 py-3 {% if request.endpoint == 'empresa.compras' %}bg-green-900{% endif %} text-white hover:bg-green-700 rounded-l-full mt-2">
+                <i class="fas fa-shopping-cart w-5 h-5 mr-3"></i>
+                Compras
+            </a>
+            
+            <a href="{{ url_for('empresa.reportes_empresa') }}"
+               class="flex items-center px-6 py-3 {% if request.endpoint == 'empresa.reportes' %}bg-green-900{% endif %} text-white hover:bg-green-700 rounded-l-full mt-2">
+                <i class="fas fa-chart-bar w-5 h-5 mr-3"></i>
+                Reportes
+            </a>
+        </nav>
+
+        <!-- Cerrar Sesión -->
+        <div class="absolute bottom-0 w-64 p-4">
+            <a href="{{ url_for('logout') }}" 
+               class="flex items-center px-4 py-2 text-white hover:bg-green-700 rounded">
+                <i class="fas fa-sign-out-alt w-5 h-5 mr-3"></i>
+                Cerrar Sesión
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 overflow-auto">
+        <header class="bg-white shadow">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold text-green-800">Bienvenido, {{ empresa.nombre }}</h2>
+                    <p class="text-sm text-gray-600">NIT: {{ empresa.nit }}</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Total Compras -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center mb-2">
+                        <h3 class="text-gray-500 text-sm font-medium">Total Compras</h3>
+                        <i class="fas fa-dollar-sign ml-2 text-green-600"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-green-800">
+                        $ 85,750,000 COP
+                    </p>
+                    <p class="text-sm text-green-600">+15.3% desde el trimestre pasado</p>
+                </div>
+
+                <!-- Meta Trimestral -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center mb-2">
+                        <h3 class="text-gray-500 text-sm font-medium">Meta Trimestral</h3>
+                        <i class="fas fa-chart-line ml-2 text-green-600"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-green-800">65%</p>
+                    <div class="mt-2 w-full bg-green-200 rounded-full h-2">
+                        <div class="bg-green-600 h-2 rounded-full" style="width: 65%"></div>
+                    </div>
+                </div>
+
+                <!-- Próxima Entrega -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center mb-2">
+                        <h3 class="text-gray-500 text-sm font-medium">Próxima Entrega</h3>
+                        <i class="fas fa-calendar ml-2 text-green-600"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-green-800">22 Mayo, 2025</p>
+                    <p class="text-sm text-gray-600">Faltan 4 días</p>
+                </div>
+            </div>
+
+            <!-- Compras Recientes & Reportes Tabs -->
+            <div class="mb-8">
+                <div class="border-b border-gray-200">
+                    <nav class="-mb-px flex">
+                        <a href="#" class="px-6 py-3 border-b-2 border-green-600 text-green-600 font-medium">
+                            Compras Recientes
+                        </a>
+                        <a href="#" class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium">
+                            Reportes
+                        </a>
+                    </nav>
+                </div>
+
+                <!-- Compras Recientes Table -->
+                <div class="bg-white shadow rounded-lg mt-4 p-6">
+                    <h3 class="text-lg font-medium mb-4">Compras Recientes</h3>
+                    <p class="text-sm text-gray-500 mb-6">Has realizado 3 compras en los últimos 2 meses</p>
+                    
+                    <div class="space-y-4">
+                        <!-- Compra Item -->
+                        <div class="flex items-center justify-between py-3 border-b">
+                            <div class="flex items-center">
+                                <i class="fas fa-coffee text-green-600 bg-green-100 p-2 rounded-full mr-4"></i>
+                                <div>
+                                    <p class="font-medium">Café Pergamino - 120 kg</p>
+                                    <p class="text-sm text-gray-500">12/05/2025 - Proveedor: Juan Pérez</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">Completado</span>
+                                <p class="text-lg font-semibold mt-1">10,200,000 COP</p>
+                            </div>
+                        </div>
+
+                        <!-- More items... -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Precios Actuales del Mercado -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Precios Actuales del Mercado</h3>
+                <p class="text-sm text-gray-500 mb-6">Precios actualizados al 18 de Mayo, 2025</p>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Café Pergamino -->
+                    <div class="space-y-4">
+                        <h4 class="font-medium">Café Pergamino</h4>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Precio por Kg</span>
+                            <span class="font-medium">85,000 COP</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Precio por Carga (120kg)</span>
+                            <span class="font-medium">10,200,000 COP</span>
+                        </div>
+                    </div>
+
+                    <!-- Café Verde -->
+                    <div class="space-y-4">
+                        <h4 class="font-medium">Café Verde</h4>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Precio por Kg</span>
+                            <span class="font-medium">75,000 COP</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Precio por Carga (120kg)</span>
+                            <span class="font-medium">9,000,000 COP</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

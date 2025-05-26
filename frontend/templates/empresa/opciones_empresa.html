@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opciones Empresa - CafExport</title>
+    <link rel="stylesheet" href="/static/css/opciones_registro.css">
+</head>
+<body>
+    <a href="{{ url_for('index') }}" class="volver">&larr; Volver</a>
+    <div class="container">
+        <div class="cards">
+            <div class="card empresa">
+                <h2>Iniciar Sesión</h2>
+                <h3>Para empresas registradas</h3>
+                <div class="img-placeholder"></div>
+                <p>Si ya tienes una cuenta, inicia sesión para gestionar tus pedidos</p>
+                <a href="{{ url_for('empresa.login_empresa') }}" class="btn">Iniciar Sesión</a>
+            </div>
+            <div class="card empresa">
+                <h2>Registrarse</h2>
+                <h3>Para nuevas empresas</h3>
+                <div class="img-placeholder"></div>
+                <p>Si eres nuevo, crea una cuenta para empezar a comprar café</p>
+                <a href="{{ url_for('empresa.registro_empresa') }}" class="btn">Registrarse</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

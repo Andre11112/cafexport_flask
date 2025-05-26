@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12">
+    <div class="text-center mb-12">
+        <h1 class="text-5xl font-bold text-green-800 mb-4">CafExport</h1>
+        <p class="text-xl text-green-600">Plataforma de compra y venta de café</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto px-4">
+        <!-- Card Campesinos -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="bg-green-700 text-white p-6">
+                <h2 class="text-2xl font-bold mb-2">Para Campesinos</h2>
+                <p class="text-lg">Productores de café</p>
+            </div>
+            <div class="p-6 text-center">
+                <div class="bg-green-100 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+                    <i class="fas fa-seedling text-4xl text-green-700"></i>
+                </div>
+                <p class="text-gray-600 mb-6">
+                    Accede como productor para vender tu café y gestionar tus cosechas
+                </p>
+                <a href="{{ url_for('campesino.opciones_campesino') }}" 
+                   class="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-200">
+                    Acceder como Campesino
+                </a>
+            </div>
+        </div>
+
+        <!-- Card Empresas -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="bg-green-700 text-white p-6">
+                <h2 class="text-2xl font-bold mb-2">Para Empresas</h2>
+                <p class="text-lg">Compradores de café</p>
+            </div>
+            <div class="p-6 text-center">
+                <div class="bg-green-100 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+                    <i class="fas fa-building text-4xl text-green-700"></i>
+                </div>
+                <p class="text-gray-600 mb-6">
+                    Accede como empresa para comprar café y gestionar tus pedidos
+                </p>
+                <a href="{{ url_for('empresa.opciones_empresa') }}"
+                   class="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-200">
+                    Acceder como Empresa
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opciones Campesino - CafExport</title>
+    <link rel="stylesheet" href="/static/css/opciones_registro.css">
+</head>
+<body>
+    <a href="{{ url_for('index') }}" class="volver">&larr; Volver</a>
+    <div class="container">
+        <div class="cards">
+            <div class="card campesino">
+                <h2>Iniciar Sesión</h2>
+                <h3>Para campesinos registrados</h3>
+                <div class="img-placeholder"></div>
+                <p>Si ya tienes una cuenta, inicia sesión para acceder a tu perfil</p>
+                <a href="{{ url_for('campesino.login_campesino') }}" class="btn">Iniciar Sesión</a>
+            </div>
+            <div class="card campesino">
+                <h2>Registrarse</h2>
+                <h3>Para nuevos campesinos</h3>
+                <div class="img-placeholder"></div>
+                <p>Si eres nuevo, crea una cuenta para empezar a vender tu café</p>
+                <a href="{{ url_for('campesino.registro_campesino') }}" class="btn">Registrarse</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Reportes y Estadísticas{% endblock %}
+
+{% block content %}
+<div class="flex h-screen bg-gray-50">
+    {% include "campesino/sidebar.html" %}
+    
+    <div class="flex-1 overflow-auto">
+        <!-- Header con botón de regresar -->
+        <header class="bg-white shadow">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <a href="{{ url_for('campesino.dashboard') }}" class="text-green-700 hover:text-green-900 flex items-center">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Volver al Dashboard
+                        </a>
+                        <h1 class="text-2xl font-bold text-gray-900 mt-2">Reportes y Estadísticas</h1>
+                        <p class="text-sm text-gray-600">{{ campesino.nombre }} - {{ campesino.finca }}</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <select class="rounded-md border-gray-300 shadow-sm">
+                            <option>Último mes</option>
+                            <option>Últimos 3 meses</option>
+                            <option>Último año</option>
+                        </select>
+                        <button class="bg-white text-gray-700 px-4 py-2 rounded-lg border hover:bg-gray-50 flex items-center">
+                            <i class="fas fa-download mr-2"></i>
+                            Exportar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Tarjetas de estadísticas -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium text-gray-500">Total Ventas</h3>
+                        <i class="fas fa-dollar-sign text-green-600"></i>
+                    </div>
+                    <p class="text-2xl font-bold text-gray-900">
+                        {{ data.total_ventas|default('12,500,000') }} COP
+                    </p>
+                    <p class="text-sm text-gray-600">Cantidad: {{ data.cantidad_kg|default('150') }} kg</p>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium text-gray-500">Precio Promedio</h3>
+                        <i class="fas fa-chart-line text-green-600"></i>
+                    </div>
+                    <p class="text-2xl font-bold text-gray-900">
+                        {{ data.precio_promedio|default('83,333') }} COP/kg
+                    </p>
+                    <p class="text-sm text-gray-600">Por kilogramo</p>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium text-gray-500">Mes Actual vs Anterior</h3>
+                        <i class="fas fa-calendar text-green-600"></i>
+                    </div>
+                    <p class="text-2xl font-bold text-gray-900">
+                        {{ data.mes_actual|default('2,550,000') }} COP
+                    </p>
+                    <p class="text-sm {% if data.mes_diferencia < 0 %}text-red-600{% else %}text-green-600{% endif %}">
+                        {{ data.mes_diferencia|default('-20.31') }}% vs mes anterior
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium text-gray-500">Año Actual vs Anterior</h3>
+                        <i class="fas fa-calendar-alt text-green-600"></i>
+                    </div>
+                    <p class="text-2xl font-bold text-gray-900">
+                        {{ data.anio_actual|default('8,750,000') }} COP
+                    </p>
+                    <p class="text-sm text-green-600">
+                        +{{ data.anio_diferencia|default('21.53') }}% vs año anterior
+                    </p>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h2 class="text-lg font-medium mb-2">Ventas por Mes</h2>
+                    <p class="text-sm text-gray-500 mb-4">Evolución de ventas en los últimos meses</p>
+                    <canvas id="ventasPorMes" height="300"></canvas>
+                </div>
+
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h2 class="text-lg font-medium mb-2">Ventas por Tipo de Café</h2>
+                    <p class="text-sm text-gray-500 mb-4">Distribución de ventas según tipo de café</p>
+                    <canvas id="distribucionCafe" height="300"></canvas>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gráfico de ventas mensuales
+    new Chart(document.getElementById('ventasPorMes'), {
+        type: 'line',
+        data: {
+            labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo'],
+            datasets: [{
+                label: 'Ventas',
+                data: [8125000, 3125000, 1250000],
+                borderColor: '#16a34a',
+                backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString('es-CO', {
+                                style: 'currency',
+                                currency: 'COP',
+                                minimumFractionDigits: 0
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Gráfico de distribución
+    new Chart(document.getElementById('distribucionCafe'), {
+        type: 'pie',
+        data: {
+            labels: ['Pergamino', 'Verde', 'Tostado'],
+            datasets: [{
+                data: [65.5, 25, 10],
+                backgroundColor: ['#16a34a', '#86efac', '#dcfce7']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

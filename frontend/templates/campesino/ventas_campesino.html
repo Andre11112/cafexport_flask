@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Ventas{% endblock %}
+
+{% block content %}
+<div class="flex h-screen bg-gray-50">
+    <!-- Sidebar -->
+    <div class="w-64 bg-green-800 text-white">
+        <!-- Logo -->
+        <div class="p-4">
+            <h1 class="text-2xl font-bold">CafExport</h1>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="mt-8">
+            <a href="{{ url_for('campesino.dashboard') }}" 
+               class="flex items-center px-6 py-3 {% if request.endpoint == 'campesino.dashboard' %}bg-green-900{% endif %} text-white hover:bg-green-700 rounded-l-full">
+                <i class="fas fa-home w-5 h-5 mr-3"></i>
+                Inicio
+            </a>
+            
+            <a href="{{ url_for('campesino.perfil') }}"
+               class="flex items-center px-6 py-3 {% if request.endpoint == 'campesino.perfil' %}bg-green-900{% endif %} text-white hover:bg-green-700 rounded-l-full mt-2">
+                <i class="fas fa-user w-5 h-5 mr-3"></i>
+                Perfil
+            </a>
+            
+            <a href="{{ url_for('campesino.ventas') }}"
+               class="flex items-center px-6 py-3 {% if request.endpoint == 'campesino.ventas' %}bg-green-900{% endif %} text-white hover:bg-green-700 rounded-l-full mt-2">
+                <i class="fas fa-coins w-5 h-5 mr-3"></i>
+                Ventas
+            </a>
+            
+            <a href="{{ url_for('campesino.reportes') }}"
+               class="flex items-center px-6 py-3 {% if request.endpoint == 'campesino.reportes' %}bg-green-900{% endif %} text-white hover:bg-green-700 rounded-l-full mt-2">
+                <i class="fas fa-chart-bar w-5 h-5 mr-3"></i>
+                Reportes
+            </a>
+        </nav>
+
+        <!-- Cerrar Sesión Button -->
+        <div class="absolute bottom-0 w-64 p-4">
+            <a href="{{ url_for('logout') }}" 
+               class="flex items-center px-4 py-2 text-white hover:bg-green-700 rounded">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                Cerrar Sesión
+            </a>
+        </div>
+    </div>
+    
+    <div class="flex-1 overflow-auto p-6">
+        <!-- Header Section -->
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Mis Ventas</h1>
+                <p class="text-green-600">Gestiona tus ventas de café</p>
+            </div>
+            <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center">
+                <i class="fas fa-plus w-5 h-5 mr-2"></i>
+                Registrar Venta
+            </button>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-5 gap-4 mb-8">
+            <div class="bg-white p-4 rounded-lg shadow">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm text-gray-600">Total Ventas</h3>
+                    <span class="text-green-600"><i class="fas fa-chart-bar"></i></span>
+                </div>
+                <p class="text-2xl font-bold">{{ estadisticas.total_ventas | default(0) }}</p>
+            </div>
+
+            <div class="bg-white p-4 rounded-lg shadow">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm text-gray-600">Completadas</h3>
+                    <span class="text-green-600"><i class="fas fa-check"></i></span>
+                </div>
+                <p class="text-2xl font-bold">{{ estadisticas.completadas | default(0) }}</p>
+            </div>
+
+            <div class="bg-white p-4 rounded-lg shadow">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm text-gray-600">Pendientes</h3>
+                    <span class="text-yellow-500"><i class="fas fa-clock"></i></span>
+                </div>
+                <p class="text-2xl font-bold">{{ estadisticas.pendientes | default(0) }}</p>
+            </div>
+
+            <div class="bg-white p-4 rounded-lg shadow">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm text-gray-600">Total Ingresos</h3>
+                    <span class="text-green-600"><i class="fas fa-dollar-sign"></i></span>
+                </div>
+                <p class="text-2xl font-bold">{{ "{:,.0f}".format(estadisticas.total_ingresos | default(0)) }} COP</p>
+            </div>
+
+            <div class="bg-white p-4 rounded-lg shadow">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm text-gray-600">Promedio</h3>
+                    <span class="text-blue-600"><i class="fas fa-chart-line"></i></span>
+                </div>
+                <p class="text-2xl font-bold">{{ "{:,.0f}".format(estadisticas.promedio | default(0)) }} COP</p>
+            </div>
+        </div>
+
+        <!-- Historial de Ventas Section -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-xl font-bold">Historial de Ventas</h2>
+                    <p class="text-gray-600">Registro detallado de todas tus ventas</p>
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex items-center bg-gray-100 rounded-lg px-3 py-2">
+                        <i class="fas fa-search text-gray-400 mr-2"></i>
+                        <input type="text" placeholder="Buscar venta..." class="bg-transparent border-none focus:outline-none">
+                    </div>
+                    <select class="bg-gray-100 rounded-lg px-3 py-2 border-none">
+                        <option>Todos los estados</option>
+                    </select>
+                    <button class="bg-gray-100 p-2 rounded-lg"><i class="fas fa-filter"></i></button>
+                    <button class="bg-gray-100 p-2 rounded-lg"><i class="fas fa-download"></i></button>
+                </div>
+            </div>
+
+            <!-- Vista de Tabla/Tarjetas Toggle -->
+            <div class="flex gap-4 mb-4">
+                <button class="px-4 py-2 bg-gray-100 rounded-lg">Vista de Tabla</button>
+                <button class="px-4 py-2 rounded-lg">Vista de Tarjetas</button>
+            </div>
+
+            <!-- Tabla -->
+            <table class="min-w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Comprador</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cantidad</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Precio</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for venta in ventas %}
+                    <tr>
+                        <td class="px-6 py-4">{{ venta.fecha }}</td>
+                        <td class="px-6 py-4">{{ venta.comprador }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                                {{ venta.tipo_cafe }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">{{ venta.cantidad }} kg</td>
+                        <td class="px-6 py-4">{{ "{:,.0f}".format(venta.precio_kg) }} COP/kg</td>
+                        <td class="px-6 py-4">{{ "{:,.0f}".format(venta.total) }} COP</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                                {{ venta.estado }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <button class="text-gray-400 hover:text-gray-600"><i class="fas fa-ellipsis-v"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Registro de Venta -->
+<div id="registroVentaModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Registrar Nueva Venta</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500">Ingrese los detalles de su venta de café</p>
+                
+                <!-- Formulario -->
+                <form id="formRegistroVenta" class="mt-4 space-y-4">
+                    <div>
+                        <label for="cantidad" class="block text-sm font-medium text-gray-700 text-left">Cantidad (kg)</label>
+                        <input type="number" name="cantidad" id="cantidad" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label for="tipo_cafe" class="block text-sm font-medium text-gray-700 text-left">Tipo de Café</label>
+                        <select id="tipo_cafe" name="tipo_cafe" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm px-3 py-2" required>
+                            <option value="">Seleccione un tipo</option>
+                            <option value="Pasilla">Pasilla</option>
+                            <option value="Arabica">Cafe Arabico</option>
+                            <!-- Añadir más opciones según sea necesario -->
+                        </select>
+                    </div>
+                    <div>
+                        <label for="precio_kg" class="block text-sm font-medium text-gray-700 text-left">Precio (COP/kg)</label>
+                        <input type="number" name="precio_kg" id="precio_kg" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm px-3 py-2" required>
+                    </div>
+
+                    <!-- Campo para mostrar el Total -->
+                    <div>
+                        <label for="total_venta" class="block text-sm font-medium text-gray-700 text-left">Total Venta (COP)</label>
+                        <p id="total_venta" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 px-3 py-2 text-gray-900 sm:text-sm">0.00</p>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="items-center px-4 py-3">
+                <button id="registrarVentaBtnModal" class="px-4 py-2 bg-green-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    Registrar Venta
+                </button>
+            </div>
+        </div>
+        <!-- Botón de cerrar -->
+        <span class="absolute top-0 right-0 p-4 cursor-pointer" id="cerrarModalBtn">
+            <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </span>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/ventas_campesino.js') }}"></script>
+{% endblock %}
