@@ -33,13 +33,16 @@ CREATE TYPE tipo_cafe AS ENUM (
 );
 
 -- Crear enum para estado de venta (si no existe)
+DROP TYPE IF EXISTS estado_venta CASCADE;
 CREATE TYPE estado_venta AS ENUM (
     'Pendiente',
     'Aprobada',
     'Rechazada',
-    'Cancelada'
+    'Cancelada',
+    'Completada'
 );
 -- Tabla de ventas
+DROP TABLE IF EXISTS ventas CASCADE;
 CREATE TABLE IF NOT EXISTS ventas (
     id SERIAL PRIMARY KEY,
     campesino_id INTEGER NOT NULL,
@@ -49,7 +52,7 @@ CREATE TABLE IF NOT EXISTS ventas (
     precio_kg DECIMAL(10,2) NOT NULL CHECK (precio_kg > 0),
     total DECIMAL(12,2) GENERATED ALWAYS AS (cantidad * precio_kg) STORED,
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    estado estado_venta DEFAULT 'Pendiente',
+    estado estado_venta DEFAULT 'Aprobada',
     CONSTRAINT fk_campesino FOREIGN KEY (campesino_id) 
         REFERENCES usuario(id) ON DELETE RESTRICT,
     CONSTRAINT fk_empresa FOREIGN KEY (empresa_id) 

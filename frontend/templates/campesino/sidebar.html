@@ -1,0 +1,45 @@
+<div class="w-64 bg-green-800 text-white">
+    <!-- Logo -->
+    <div class="p-4">
+        <h1 class="text-2xl font-bold">CafExport</h1>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="mt-8">
+        <a href="{{ url_for('campesino.dashboard') }}" 
+           class="flex items-center px-6 py-3 {% if request.endpoint == 'campesino.dashboard' %}bg-green-900{% endif %} text-white hover:bg-green-700 rounded-l-full">
+            <i class="fas fa-home w-5 h-5 mr-3"></i>
+            Inicio
+        </a>
+        
+        <a href="{{ url_for('campesino.perfil') }}"
+           class="flex items-center px-6 py-3 {% if request.endpoint == 'campesino.perfil' %}bg-green-900{% endif %} text-white hover:bg-green-700 rounded-l-full mt-2">
+            <i class="fas fa-user w-5 h-5 mr-3"></i>
+            Perfil
+        </a>
+        
+        <a href="{{ url_for('campesino.ventas') }}"
+           class="flex items-center px-6 py-3 {% if request.endpoint == 'campesino.ventas' %}bg-green-900{% endif %} text-white hover:bg-green-700 rounded-l-full mt-2">
+            <i class="fas fa-coins w-5 h-5 mr-3"></i>
+            Ventas
+        </a>
+        
+        <a href="{{ url_for('campesino.reportes') }}"
+           class="flex items-center px-6 py-3 {% if request.endpoint == 'campesino.reportes' %}bg-green-900{% endif %} text-white hover:bg-green-700 rounded-l-full mt-2">
+            <i class="fas fa-chart-bar w-5 h-5 mr-3"></i>
+            Reportes
+        </a>
+    </nav>
+
+    <!-- Cerrar Sesión Button -->
+    <div class="absolute bottom-0 w-64 p-4">
+        <a href="{{ url_for('logout') }}" 
+           class="flex items-center px-4 py-2 text-white hover:bg-green-700 rounded">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+            Cerrar Sesión
+        </a>
+    </div>
+</div> 

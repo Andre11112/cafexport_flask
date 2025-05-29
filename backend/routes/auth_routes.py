@@ -95,7 +95,7 @@ def login():
         return jsonify({'error': 'Credenciales inválidas'}), 401
     
     # Crear token de acceso
-    access_token = create_access_token(identity=usuario.id)
+    access_token = create_access_token(identity=str(usuario.id))
     
     # Preparar datos del usuario para el frontend
     usuario_data = {

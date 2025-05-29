@@ -51,7 +51,7 @@ async function handleLogin(event, userType) {
         }
 
         // Guardar token y datos del usuario en localStorage
-        localStorage.setItem('userToken', data.token);
+        localStorage.setItem('access_token', data.token);
         localStorage.setItem('userType', data.tipo_usuario);
         localStorage.setItem('userData', JSON.stringify(data.usuario));
 

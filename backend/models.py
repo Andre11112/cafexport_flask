@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from sqlalchemy.schema import Computed
 
 import enum
 
@@ -17,6 +18,7 @@ class EstadoVentaEnum(enum.Enum):
     Aprobada = 'Aprobada'
     Rechazada = 'Rechazada'
     Cancelada = 'Cancelada'
+    Completada = 'Completada'
 
 # Modelos
 class Usuario(UserMixin, db.Model):
@@ -67,9 +69,12 @@ class Venta(db.Model):
     tipo_cafe = db.Column(db.Enum(TipoCafeEnum), nullable=False)
     cantidad = db.Column(db.DECIMAL(10, 2), nullable=False)
     precio_kg = db.Column(db.DECIMAL(10, 2), nullable=False)
-    total = db.Column(db.DECIMAL(12, 2), nullable=False) # SQLAlchemy puede calcular esto o puedes calcularlo tú
+    total = db.Column(db.DECIMAL(12, 2), Computed('cantidad * precio_kg'), nullable=False)
     fecha = db.Column(db.TIMESTAMP, default=datetime.utcnow)
-    estado = db.Column(db.Enum(EstadoVentaEnum), default=EstadoVentaEnum.Pendiente, nullable=False)
+    estado = db.Column(db.Enum(EstadoVentaEnum), default=EstadoVentaEnum.Aprobada, nullable=False)
+
+    # Definición de la relación con la empresa (comprador)
+    empresa = db.relationship('Usuario', foreign_keys=[empresa_id])
 
     # Puedes añadir un evento para calcular el total antes de guardar si no usas GENERATED ALWAYS AS
     # from sqlalchemy.event import listens_for

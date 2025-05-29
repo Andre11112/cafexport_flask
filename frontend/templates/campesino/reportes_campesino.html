@@ -43,9 +43,9 @@
                         <i class="fas fa-dollar-sign text-green-600"></i>
                     </div>
                     <p class="text-2xl font-bold text-gray-900">
-                        {{ data.total_ventas|default('12,500,000') }} COP
+                        $ {{ "{:,.0f}".format((data.total_ventas if data and data.total_ventas is not none else 0) | float) }} COP
                     </p>
-                    <p class="text-sm text-gray-600">Cantidad: {{ data.cantidad_kg|default('150') }} kg</p>
+                    <p class="text-sm text-gray-600">Cantidad: {{ (data.cantidad_kg if data and data.cantidad_kg is not none else 0) | default(0) }} kg</p>
                 </div>
 
                 <div class="bg-white rounded-lg shadow p-6">
@@ -54,7 +54,7 @@
                         <i class="fas fa-chart-line text-green-600"></i>
                     </div>
                     <p class="text-2xl font-bold text-gray-900">
-                        {{ data.precio_promedio|default('83,333') }} COP/kg
+                        $ {{ "{:,.0f}".format((data.precio_promedio if data and data.precio_promedio is not none else 0) | float) }} COP/kg
                     </p>
                     <p class="text-sm text-gray-600">Por kilogramo</p>
                 </div>
@@ -65,10 +65,10 @@
                         <i class="fas fa-calendar text-green-600"></i>
                     </div>
                     <p class="text-2xl font-bold text-gray-900">
-                        {{ data.mes_actual|default('2,550,000') }} COP
+                        $ {{ "{:,.0f}".format((data.mes_actual if data and data.mes_actual is not none else 0) | float) }} COP
                     </p>
-                    <p class="text-sm {% if data.mes_diferencia < 0 %}text-red-600{% else %}text-green-600{% endif %}">
-                        {{ data.mes_diferencia|default('-20.31') }}% vs mes anterior
+                    <p class="text-sm {% if data and data.mes_diferencia is not none and data.mes_diferencia < 0 %}text-red-600{% else %}text-green-600{% endif %}">
+                        {{ (data.mes_diferencia if data and data.mes_diferencia is not none else 0) | default(0) }}% vs mes anterior
                     </p>
                 </div>
 
@@ -78,10 +78,10 @@
                         <i class="fas fa-calendar-alt text-green-600"></i>
                     </div>
                     <p class="text-2xl font-bold text-gray-900">
-                        {{ data.anio_actual|default('8,750,000') }} COP
+                        $ {{ "{:,.0f}".format((data.anio_actual if data and data.anio_actual is not none else 0) | float) }} COP
                     </p>
-                    <p class="text-sm text-green-600">
-                        +{{ data.anio_diferencia|default('21.53') }}% vs año anterior
+                    <p class="text-sm {% if data and data.anio_diferencia is not none and data.anio_diferencia < 0 %}text-red-600{% else %}text-green-600{% endif %}">
+                        +{{ (data.anio_diferencia if data and data.anio_diferencia is not none else 0) | default(0) }}% vs año anterior
                     </p>
                 </div>
             </div>
@@ -92,12 +92,16 @@
                     <h2 class="text-lg font-medium mb-2">Ventas por Mes</h2>
                     <p class="text-sm text-gray-500 mb-4">Evolución de ventas en los últimos meses</p>
                     <canvas id="ventasPorMes" height="300"></canvas>
+                    {# Elemento para almacenar datos de ventas por mes #}
+                    <div id="ventasPorMesData" data-labels="{{ data.ventas_por_mes.labels | tojson if data and data.ventas_por_mes else '[]' }}" data-data="{{ data.ventas_por_mes.data | tojson if data and data.ventas_por_mes else '[]' }}"></div>
                 </div>
 
                 <div class="bg-white shadow rounded-lg p-6">
                     <h2 class="text-lg font-medium mb-2">Ventas por Tipo de Café</h2>
                     <p class="text-sm text-gray-500 mb-4">Distribución de ventas según tipo de café</p>
                     <canvas id="distribucionCafe" height="300"></canvas>
+                     {# Elemento para almacenar datos de ventas por tipo #}
+                    <div id="ventasPorTipoData" data-labels="{{ data.ventas_por_tipo.labels | tojson if data and data.ventas_por_tipo else '[]' }}" data-data="{{ data.ventas_por_tipo.data | tojson if data and data.ventas_por_tipo else '[]' }}"></div>
                 </div>
             </div>
         </main>
@@ -109,14 +113,25 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Obtener los datos de los atributos data-*
+    const ventasPorMesElement = document.getElementById('ventasPorMesData');
+    const ventasPorMesLabels = JSON.parse(ventasPorMesElement.dataset.labels);
+    const ventasPorMesData = JSON.parse(ventasPorMesElement.dataset.data);
+
+    const ventasPorTipoElement = document.getElementById('ventasPorTipoData');
+    const ventasPorTipoLabels = JSON.parse(ventasPorTipoElement.dataset.labels);
+    const ventasPorTipoData = JSON.parse(ventasPorTipoElement.dataset.data);
+
+    // Verificar si hay datos para el gráfico de ventas mensuales
+    if (ventasPorMesLabels.length > 0 && ventasPorMesData.length > 0) {
     // Gráfico de ventas mensuales
     new Chart(document.getElementById('ventasPorMes'), {
         type: 'line',
         data: {
-            labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo'],
+                labels: ventasPorMesLabels, // Usar labels dinámicos
             datasets: [{
                 label: 'Ventas',
-                data: [8125000, 3125000, 1250000],
+                    data: ventasPorMesData, // Usar datos dinámicos
                 borderColor: '#16a34a',
                 backgroundColor: 'rgba(22, 163, 74, 0.1)',
                 tension: 0.4
@@ -146,15 +161,25 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    } else {
+        // Mostrar mensaje si no hay datos para el gráfico de ventas por mes
+        const ventasPorMesCanvas = document.getElementById('ventasPorMes');
+        const ctx = ventasPorMesCanvas.getContext('2d');
+        ctx.font = '14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('No hay datos de ventas mensuales disponibles', ventasPorMesCanvas.width / 2, ventasPorMesCanvas.height / 2);
+    }
 
+    // Verificar si hay datos para el gráfico de distribución por tipo
+    if (ventasPorTipoLabels.length > 0 && ventasPorTipoData.length > 0) {
     // Gráfico de distribución
     new Chart(document.getElementById('distribucionCafe'), {
         type: 'pie',
         data: {
-            labels: ['Pergamino', 'Verde', 'Tostado'],
+                labels: ventasPorTipoLabels, // Usar labels dinámicos
             datasets: [{
-                data: [65.5, 25, 10],
-                backgroundColor: ['#16a34a', '#86efac', '#dcfce7']
+                    data: ventasPorTipoData, // Usar datos dinámicos
+                    backgroundColor: ['#16a34a', '#86efac', '#dcfce7'] // Puedes hacer los colores dinámicos también
             }]
         },
         options: {
@@ -167,6 +192,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    } else {
+        // Mostrar mensaje si no hay datos para el gráfico de distribución por tipo
+        const distribucionCafeCanvas = document.getElementById('distribucionCafe');
+        const ctx = distribucionCafeCanvas.getContext('2d');
+        ctx.font = '14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('No hay datos de distribución por tipo de café disponibles', distribucionCafeCanvas.width / 2, distribucionCafeCanvas.height / 2);
+    }
 });
 </script>
 {% endblock %}

@@ -3,6 +3,12 @@ import requests
 import os
 from config import Config
 from werkzeug.routing import BuildError
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
+
+db = SQLAlchemy()
 
 def create_app():
     app = Flask(__name__,
@@ -12,10 +18,11 @@ def create_app():
     # Cargar configuración
     app.config.from_object(Config)
     # Asegurarse de que SECRET_KEY se carga desde la configuración
-    app.config['SECRET_KEY'] = app.config.get('SECRET_KEY', 'dev-key-1234')
+    app.config['SECRET_KEY'] = 'dev-key-1234' # Restaurar clave secreta original
 
     # Registrar blueprints
     try:
+        # Restaurar importaciones originales (asumiendo que eran relativas)
         from routes.campesino_routes import campesino_bp
         from routes.empresa_routes import empresa_bp
         app.register_blueprint(campesino_bp, url_prefix='/campesino')

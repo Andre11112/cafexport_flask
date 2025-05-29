@@ -122,26 +122,7 @@ def perfil():
 @login_required
 @campesino_required
 def ventas():
-    try:
-        headers = {'Authorization': f'Bearer {session.get("token")}'}
-        response = requests.get(
-            Config.API_ENDPOINTS['ventas_campesino'],
-            headers=headers
-        )
-        
-        if response.status_code == 200:
-            data = response.json()
-            return render_template(
-                'campesino/ventas_campesino.html',
-                ventas=data.get('ventas', []),
-                estadisticas=data.get('estadisticas', {})
-            )
-        else:
-            flash('Error al cargar las ventas', 'error')
-            return render_template('campesino/ventas_campesino.html', ventas=[], estadisticas={})
-    except requests.exceptions.RequestException as e:
-        flash('Error de conexión con el servidor', 'error')
-        return render_template('campesino/ventas_campesino.html', ventas=[], estadisticas={})
+    return render_template('campesino/ventas_campesino.html', ventas=[], estadisticas={})
 
 @campesino_bp.route('/reportes')
 @login_required

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from models import db, Usuario
+from ..models import db, Usuario
 
 empresa_auth_bp = Blueprint('empresa_auth', __name__)
 
@@ -52,7 +52,7 @@ def login_empresa():
         return jsonify({'error': 'Credenciales inválidas'}), 401
     
     # Crear token de acceso
-    access_token = create_access_token(identity=usuario.id)
+    access_token = create_access_token(identity=str(usuario.id))
     
     return jsonify({
         'access_token': access_token,
