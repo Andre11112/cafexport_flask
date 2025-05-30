@@ -95,3 +95,70 @@ class Venta(db.Model):
             'fecha': self.fecha.isoformat() if self.fecha else None,
             'estado': self.estado.value, # Obtener el valor string del Enum
         } 
+
+# Modelo para las compras de las empresas a CafExport
+class CompraEmpresa(db.Model):
+    __tablename__ = 'compras_empresa'
+
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey('usuario.id', ondelete='RESTRICT'), nullable=False)
+    cafexport_vendedor_id = db.Column(db.Integer, db.ForeignKey('usuario.id', ondelete='RESTRICT'), nullable=False)
+    tipo_cafe = db.Column(db.Enum(TipoCafeEnum), nullable=False)
+    cantidad = db.Column(db.DECIMAL(10, 2), nullable=False)
+    precio_kg = db.Column(db.DECIMAL(10, 2), nullable=False)
+    total = db.Column(db.DECIMAL(12, 2), Computed('cantidad * precio_kg'), nullable=False)
+    fecha_orden = db.Column(db.TIMESTAMP, nullable=False)
+    fecha_entrega = db.Column(db.TIMESTAMP, nullable=True)
+    notas = db.Column(db.TEXT, nullable=True)
+    estado = db.Column(db.Enum(EstadoVentaEnum), default=EstadoVentaEnum.Pendiente, nullable=False)
+
+    # Relaciones (opcional, pero útil)
+    empresa = db.relationship('Usuario', foreign_keys=[empresa_id])
+    cafexport_vendedor = db.relationship('Usuario', foreign_keys=[cafexport_vendedor_id])
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'empresa_id': self.empresa_id,
+            'cafexport_vendedor_id': self.cafexport_vendedor_id,
+            'tipo_cafe': self.tipo_cafe.value,
+            'cantidad': str(self.cantidad),
+            'precio_kg': str(self.precio_kg),
+            'total': str(self.total),
+            'fecha_orden': self.fecha_orden.isoformat() if self.fecha_orden else None,
+            'fecha_entrega': self.fecha_entrega.isoformat() if self.fecha_entrega else None,
+            'notas': self.notas,
+            'estado': self.estado.value,
+        } 
+
+# Modelo para los precios del café
+class PrecioCafe(db.Model):
+    __tablename__ = 'precios_cafe'
+
+    id = db.Column(db.Integer, primary_key=True)
+    tipo_cafe = db.Column(db.Enum(TipoCafeEnum), nullable=False)
+    precio_kg = db.Column(db.DECIMAL(10, 2), nullable=False)
+    precio_usd = db.Column(db.DECIMAL(10, 2), nullable=True)  # Precio en dólares de la bolsa
+    tasa_cambio = db.Column(db.DECIMAL(10, 2), nullable=True) # Tasa de cambio USD/COP
+    fecha_actualizacion = db.Column(db.TIMESTAMP, default=datetime.utcnow)
+    fuente = db.Column(db.String(50), nullable=False) # 'manual', 'bolsa_valores', 'api_externa'
+    activo = db.Column(db.Boolean, default=True)
+    referencia_externa = db.Column(db.String(100), nullable=True) # ID o referencia de la API externa
+    metadata_json = db.Column(db.JSON, nullable=True) # Datos adicionales de la API
+
+    # Asegurar que solo haya un precio activo por tipo de café (si es necesario)
+    # __table_args__ = (db.UniqueConstraint('tipo_cafe', 'activo', name='uq_tipo_cafe_activo'),)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'tipo_cafe': self.tipo_cafe.value,
+            'precio_kg': str(self.precio_kg),
+            'precio_usd': str(self.precio_usd) if self.precio_usd is not None else None,
+            'tasa_cambio': str(self.tasa_cambio) if self.tasa_cambio is not None else None,
+            'fecha_actualizacion': self.fecha_actualizacion.isoformat() if self.fecha_actualizacion else None,
+            'fuente': self.fuente,
+            'activo': self.activo,
+            'referencia_externa': self.referencia_externa,
+            'metadata_json': self.metadata_json
+        } 

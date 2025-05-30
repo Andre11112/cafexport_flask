@@ -125,26 +125,8 @@ def perfil_empresa():
 @login_required
 @empresa_required
 def compras_empresa():
-    try:
-        headers = {'Authorization': f'Bearer {session.get("token")}'}
-        response = requests.get(
-            Config.API_ENDPOINTS['compras_empresa'],
-            headers=headers
-        )
-        
-        if response.status_code == 200:
-            data = response.json()
-            return render_template(
-                'empresa/compras.html',
-                compras=data.get('compras', []),
-                estadisticas=data.get('estadisticas', {})
-            )
-        else:
-            flash('Error al cargar las compras', 'error')
-            return render_template('empresa/compras.html', compras=[], estadisticas={})
-    except requests.exceptions.RequestException as e:
-        flash('Error de conexión con el servidor', 'error')
-        return render_template('empresa/compras.html', compras=[], estadisticas={})
+    # Esta ruta solo debe renderizar el template, el JS se encargará de cargar los datos.
+    return render_template('empresa/compras_empresas.html')
 
 @empresa_bp.route('/reportes')
 @login_required
@@ -159,13 +141,13 @@ def reportes_empresa():
         
         if response.status_code == 200:
             data = response.json()
-            return render_template('empresa/reportes.html', data=data)
+            return render_template('empresa/reportes_empresa.html', data=data)
         else:
             flash('Error al cargar los reportes', 'error')
-            return render_template('empresa/reportes.html', data=None)
+            return render_template('empresa/reportes_empresa.html', data=None)
     except requests.exceptions.RequestException as e:
         flash('Error de conexión con el servidor', 'error')
-        return render_template('empresa/reportes.html', data=None)
+        return render_template('empresa/reportes_empresa.html', data=None)
 
 @empresa_bp.route('/set_session', methods=['POST'])
 def set_session():

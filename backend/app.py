@@ -9,15 +9,16 @@ from .routes.auth_routes import auth_bp
 from .routes.ventas_routes import ventas_bp
 from .routes.campesino_auth import campesino_auth_bp
 from .routes.empresa_auth import empresa_auth_bp
+from .routes.compra_routes import compra_bp
 from flask_login import LoginManager, login_required, logout_user, login_user
-from .models import Usuario, Venta
+from .models import Usuario, Venta, CompraEmpresa
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # Cargar variables de entorno
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+# CORS(app) # Eliminar o comentar esta línea
 
 # Configuración de la clave secreta general (puede ser diferente a la de JWT)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'una_clave_general_por_defecto')
@@ -70,11 +71,16 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return Usuario.query.get(int(user_id))
 
+# Configurar CORS para permitir credenciales desde el frontend
+frontend_url = os.getenv('FRONTEND_URL', 'http://127.0.0.1:5001') # Obtener URL del frontend de variables de entorno o usar default
+CORS(app, supports_credentials=True, origins=[frontend_url])
+
 # Registrar blueprints
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(ventas_bp, url_prefix='/api')
 app.register_blueprint(campesino_auth_bp, url_prefix='/api/campesino')
 app.register_blueprint(empresa_auth_bp, url_prefix='/api/empresa')
+app.register_blueprint(compra_bp, url_prefix='/empresa')
 
 @app.errorhandler(Exception)
 def handle_exception(e):

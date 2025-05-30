@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS precios_cafe (
     fuente fuente_precio NOT NULL DEFAULT 'manual',
     activo BOOLEAN DEFAULT true,
     referencia_externa VARCHAR(100),    -- ID o referencia de la API externa
-    metadata JSONB,                     -- Datos adicionales de la API
+    metadata JSON,                     -- Datos adicionales de la API
     CONSTRAINT unique_tipo_activo UNIQUE (tipo_cafe, activo),
     CONSTRAINT precio_completo CHECK (
         (fuente = 'manual' AND precio_usd IS NULL AND tasa_cambio IS NULL) OR
@@ -106,3 +106,46 @@ CREATE INDEX idx_reportes_usuario_fecha ON reportes(usuario_id, fecha_inicio, fe
 -- Índices adicionales para consultas con API
 CREATE INDEX idx_precios_fecha ON precios_cafe(fecha_actualizacion);
 CREATE INDEX idx_precios_fuente ON precios_cafe(fuente) WHERE activo = true;
+
+-- Definir una tabla para las compras de las empresas a CafExport
+CREATE TABLE IF NOT EXISTS compras_empresa (
+    id SERIAL PRIMARY KEY,
+    empresa_id INTEGER NOT NULL, -- La empresa que compra
+    cafexport_vendedor_id INTEGER NOT NULL, -- El ID de usuario de CafExport (como vendedor)
+    tipo_cafe tipo_cafe NOT NULL,
+    cantidad DECIMAL(10,2) NOT NULL CHECK (cantidad > 0),
+    precio_kg DECIMAL(10,2) NOT NULL CHECK (precio_kg > 0),
+    total DECIMAL(12,2) GENERATED ALWAYS AS (cantidad * precio_kg) STORED,
+    fecha_orden TIMESTAMP NOT NULL,
+    fecha_entrega TIMESTAMP, -- Opcional, como en el formulario
+    notas TEXT, -- Para especificaciones adicionales
+    estado estado_venta DEFAULT 'Pendiente', -- Estado de la compra de la empresa
+    CONSTRAINT fk_empresa_compradora FOREIGN KEY (empresa_id)
+        REFERENCES usuario(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_cafexport_vendedor FOREIGN KEY (cafexport_vendedor_id)
+        REFERENCES usuario(id) ON DELETE RESTRICT -- Asegúrate de que CafExport tenga un usuario en la tabla
+);
+
+
+INSERT INTO usuario (
+    id,
+    tipo,
+    nombre,
+    cedula,
+    nit,
+    email,
+    password_hash,
+    direccion_finca,
+    direccion_empresa
+) VALUES (
+    1,
+    'admin',
+    'cafexport',
+    NULL,
+    NULL,
+    'cafexport@example.com',
+    '$2b$12$u4xy2X6jNjTL8JfoA9KArOzC/Io6cdmYm8/JUK2dBhGZxqpRUS33K', -- contraseña cafexport123
+    NULL,
+    NULL
+);
+

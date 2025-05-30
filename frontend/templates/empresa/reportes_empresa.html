@@ -1,11 +1,116 @@
 {% extends "base.html" %}
 
-{% block title %}Reportes Empresa{% endblock %}
+{% block title %}Reportes y Análisis{% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-6">
-    <h1 class="text-2xl font-bold mb-4">Reportes de Empresa</h1>
-    <p>Contenido de los reportes de empresa irá aquí.</p>
-    <!-- Agrega más contenido de reportes aquí -->
+<div class="flex h-screen bg-gray-50">
+    {# Incluir el sidebar de empresa #}
+    {% include "empresa/sidebar.html" %}
+
+    <!-- Contenido Principal -->
+    <div class="flex-1 overflow-auto">
+        <!-- Header -->
+        <header class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                <div>
+                     <a href="{{ url_for('empresa.dashboard') }}" class="text-sm text-gray-600 hover:text-gray-900 flex items-center mb-2">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        Volver al Dashboard
+                     </a>
+                    <h2 class="text-2xl font-bold text-green-800">Reportes y Análisis</h2>
+                    {# Asumo que la información de la empresa se pasa a la plantilla #}
+                    <p class="text-sm text-gray-600">{{ empresa.nombre }} - {{ empresa.ciudad }}, {{ empresa.pais }}</p>
+                </div>
+                 <div class="flex items-center space-x-4">
+                    <select class="block appearance-none bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white focus:border-gray-500 text-sm">
+                        <option>Último mes</option>
+                        <option>Últimos 3 meses</option>
+                        <option>Últimos 6 meses</option>
+                        <option>Último año</option>
+                        <option>Todo el tiempo</option>
+                    </select>
+                     <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 flex items-center text-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l3-3m-3 3l-3-3m2-8a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Exportar
+                    </button>
+                     {# Botón de cerrar - si aplica tener una vista modal o similar #}
+                     {#
+                     <button class="text-gray-400 hover:text-gray-600" onclick="history.back()">
+                         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                     </button>
+                     #}
+                </div>
+            </div>
+        </header>
+
+        <!-- Reportes Content -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <!-- Total Compras -->
+                <div class="bg-white rounded-lg shadow p-6 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-gray-500 text-sm font-medium mb-2">Total Compras</h3>
+                        <p class="text-3xl font-bold text-green-800">79,220,000 COP</p>
+                        <p class="text-sm text-gray-600">Cantidad: 890 kg</p>
+                    </div>
+                    <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V3m0 9v5m0-5c0 1.11-.89 2-2 2H8a2 2 0 01-2-2v-4c0-1.11.89-2 2-2h4zm-4 2a2 2 0 100-4 2 2 0 000 4zm7-2a2 2 0 100-4 2 2 0 000 4zm2 2c1.11 0 2.08.402 2.599 1M22 12h-5m-9 9H3v-2c0-1.11.89-2 2-2h4z"></path></svg>
+                </div>
+
+                <!-- Precio Promedio -->
+                 <div class="bg-white rounded-lg shadow p-6 flex items-center justify-between">
+                    <div>
+                         <h3 class="text-gray-500 text-sm font-medium mb-2">Precio Promedio</h3>
+                         <p class="text-3xl font-bold text-green-800">89,011 COP/kg</p>
+                         <p class="text-sm text-gray-600">Por kilogramo</p>
+                    </div>
+                     <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                </div>
+
+                <!-- Mes Actual vs Anterior -->
+                <div class="bg-white rounded-lg shadow p-6 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-gray-500 text-sm font-medium mb-2">Mes Actual vs Anterior</h3>
+                        <p class="text-3xl font-bold text-green-800">31,200,000 COP</p>
+                        <p class="text-sm text-green-600">+20.93% vs mes anterior</p>
+                    </div>
+                     <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                </div>
+
+                 <!-- Proveedores Activos -->
+                 <div class="bg-white rounded-lg shadow p-6 flex items-center justify-between">
+                    <div>
+                         <h3 class="text-gray-500 text-sm font-medium mb-2">Proveedores Activos</h3>
+                         <p class="text-3xl font-bold text-green-800">8</p>
+                         <p class="text-sm text-gray-600">de 12 totales</p>
+                    </div>
+                     <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0A5.002 5.002 0 0112 8a5.002 5.002 0 013.644 1.143m0 0c.172.554.055 1.29-.329 1.672l-4.344 4.343a8 8 0 001.778.819l2.933-2.933A7 7 0 0120 11c0-1.517-.7-2.929-1.881-3.819m-4.343 4.343L12 17.207"></path></svg>
+                </div>
+            </div>
+
+            <!-- Chart Sections -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Compras por Mes -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-medium mb-4">Compras por Mes</h3>
+                    <p class="text-sm text-gray-500 mb-4">Evolución de compras en los últimos meses</p>
+                    {# Placeholder para el gráfico de compras por mes #}
+                    <div class="bg-gray-200 h-64 flex items-center justify-center text-gray-600">Gráfico de Compras por Mes</div>
+                </div>
+
+                <!-- Compras por Tipo de Café -->
+                <div class="bg-white rounded-lg shadow p-6">
+                     <h3 class="text-lg font-medium mb-4">Compras por Tipo de Café</h3>
+                    <p class="text-sm text-gray-500 mb-4">Distribución de compras según tipo de café</p>
+                    {# Placeholder para el gráfico de compras por tipo de café #}
+                    <div class="bg-gray-200 h-64 flex items-center justify-center text-gray-600">Gráfico de Compras por Tipo de Café</div>
+                </div>
+            </div>
+        </main>
+    </div>
 </div>
+
+{# Puedes incluir scripts JS para gráficos aquí #}
+{# <script src="{{ url_for('static', filename='js/reportes_empresa.js') }}"></script> #}
+
 {% endblock %}
