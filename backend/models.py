@@ -13,11 +13,18 @@ class TipoCafeEnum(enum.Enum):
     Pasilla = 'Pasilla'
     Arabica = 'Arabica'
 
+# Enum para estados de Venta (usado en tabla ventas)
 class EstadoVentaEnum(enum.Enum):
     Pendiente = 'Pendiente'
-    Aprobada = 'Aprobada'
+    Aprobada = 'Aprobada' # Mantenemos Aprobada para Ventas
     Rechazada = 'Rechazada'
     Cancelada = 'Cancelada'
+    Completada = 'Completada'
+
+# Enum ESPECÍFICO para estados de Compra de Empresa
+class EstadoCompraEnum(enum.Enum):
+    Pendiente = 'Pendiente'
+    Confirmadas = 'Confirmadas'
     Completada = 'Completada'
 
 # Modelos
@@ -110,7 +117,7 @@ class CompraEmpresa(db.Model):
     fecha_orden = db.Column(db.TIMESTAMP, nullable=False)
     fecha_entrega = db.Column(db.TIMESTAMP, nullable=True)
     notas = db.Column(db.TEXT, nullable=True)
-    estado = db.Column(db.Enum(EstadoVentaEnum), default=EstadoVentaEnum.Pendiente, nullable=False)
+    estado = db.Column(db.Enum(EstadoCompraEnum), default=EstadoCompraEnum.Pendiente, nullable=False)
 
     # Relaciones (opcional, pero útil)
     empresa = db.relationship('Usuario', foreign_keys=[empresa_id])

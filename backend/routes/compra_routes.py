@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
-from backend.models import db, CompraEmpresa, TipoCafeEnum, EstadoVentaEnum, Usuario, PrecioCafe
+from backend.models import db, CompraEmpresa, TipoCafeEnum, EstadoVentaEnum, EstadoCompraEnum, Usuario, PrecioCafe
 from sqlalchemy import func
 from datetime import datetime
 from functools import wraps
@@ -72,11 +72,11 @@ def get_estadisticas_compras():
             .filter_by(empresa_id=current_user_id).scalar() or 0
 
         completadas_count = db.session.query(func.count(CompraEmpresa.id))\
-            .filter_by(empresa_id=current_user_id, estado=EstadoVentaEnum.Completada).scalar() or 0
+            .filter_by(empresa_id=current_user_id, estado=EstadoCompraEnum.Completada.value).scalar() or 0
         en_transito_count = db.session.query(func.count(CompraEmpresa.id))\
-            .filter_by(empresa_id=current_user_id, estado=EstadoVentaEnum.Pendiente).scalar() or 0
+            .filter_by(empresa_id=current_user_id, estado=EstadoCompraEnum.Pendiente.value).scalar() or 0
         confirmadas_count = db.session.query(func.count(CompraEmpresa.id))\
-            .filter_by(empresa_id=current_user_id, estado=EstadoVentaEnum.Aprobada).scalar() or 0
+            .filter_by(empresa_id=current_user_id, estado=EstadoCompraEnum.Confirmadas.value).scalar() or 0
 
         precio_promedio = (total_inversion / total_compras_count) if total_compras_count > 0 else 0
 
@@ -135,7 +135,7 @@ def registrar_compra():
             fecha_orden=fecha_orden,
             fecha_entrega=fecha_entrega,
             notas=data.get('notas'),
-            estado=EstadoVentaEnum.Pendiente
+            estado=EstadoCompraEnum.Pendiente
         )
 
         db.session.add(nueva_compra)
