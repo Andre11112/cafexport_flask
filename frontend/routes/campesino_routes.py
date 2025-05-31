@@ -131,24 +131,24 @@ def reportes():
     try:
         headers = {'Authorization': f'Bearer {session.get("token")}'}
         response = requests.get(
-            Config.API_ENDPOINTS['reportes_campesino'],
+            f"{Config.API_URL}/campesino/reportes_campesino",
             headers=headers
         )
         
         if response.status_code == 200:
             data = response.json()
-            return render_template('campesino/reportes_campesinos.html', 
+            return render_template('campesino/reportes_campesino.html', 
                                 campesino=session.get('user'),
                                 data=data)
         else:
             flash('Error al cargar los reportes', 'error')
-            return render_template('campesino/reportes_campesinos.html', 
+            return render_template('campesino/reportes_campesino.html', 
                                 campesino=session.get('user'),
                                 data=None)
             
     except Exception as e:
         flash('Error al cargar los reportes', 'error')
-        return render_template('campesino/reportes_campesinos.html', 
+        return render_template('campesino/reportes_campesino.html', 
                              campesino=session.get('user'),
                              data=None)
 
