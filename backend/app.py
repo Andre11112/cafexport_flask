@@ -13,6 +13,7 @@ from .routes.compra_routes import compra_bp
 from flask_login import LoginManager, login_required, logout_user, login_user
 from .models import Usuario, Venta, CompraEmpresa
 from werkzeug.security import generate_password_hash, check_password_hash
+from .routes.reportes_routes import reportes_bp
 
 # Cargar variables de entorno
 load_dotenv()
@@ -81,6 +82,7 @@ app.register_blueprint(ventas_bp, url_prefix='/api')
 app.register_blueprint(campesino_auth_bp, url_prefix='/api/campesino')
 app.register_blueprint(empresa_auth_bp, url_prefix='/api/empresa')
 app.register_blueprint(compra_bp, url_prefix='/empresa')
+app.register_blueprint(reportes_bp)
 
 @app.errorhandler(Exception)
 def handle_exception(e):

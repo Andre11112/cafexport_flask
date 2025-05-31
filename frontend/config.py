@@ -30,7 +30,7 @@ class Config:
         'dashboard_empresa': f'{API_URL}/api/empresa/dashboard',
         'perfil_empresa': f'{API_URL}/api/empresa/perfil',
         'compras_empresa': f'{API_URL}/api/empresa/compras',
-        'reportes_empresa': f'{API_URL}/api/empresa/reportes'
+        'reportes_empresa': f'{API_URL}/empresa/reportes_empresa',
     }
     
     # Configuración de templates

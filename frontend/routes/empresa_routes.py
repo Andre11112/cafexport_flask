@@ -141,13 +141,13 @@ def reportes_empresa():
         
         if response.status_code == 200:
             data = response.json()
-            return render_template('empresa/reportes_empresa.html', data=data)
+            return render_template('empresa/reportes_empresa.html', data=data, empresa=session.get('user'))
         else:
             flash('Error al cargar los reportes', 'error')
-            return render_template('empresa/reportes_empresa.html', data=None)
+            return render_template('empresa/reportes_empresa.html', data=None, empresa=session.get('user'))
     except requests.exceptions.RequestException as e:
         flash('Error de conexión con el servidor', 'error')
-        return render_template('empresa/reportes_empresa.html', data=None)
+        return render_template('empresa/reportes_empresa.html', data=None, empresa=session.get('user'))
 
 @empresa_bp.route('/set_session', methods=['POST'])
 def set_session():
