@@ -118,44 +118,64 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Cargar reportes al iniciar
-    cargarReportes();
-
-    // Manejar cambio de período
-    const selectPeriodo = document.querySelector('select');
-    if (selectPeriodo) {
-        selectPeriodo.addEventListener('change', cargarReportes);
-    }
-
     // Manejar exportación
-    const btnExportar = document.querySelector('button');
-    if (btnExportar) {
+    const btnExportar = document.querySelector('#exportarReporteBtn');
+    const selectPeriodo = document.querySelector('#periodoReporte');
+
+    if (btnExportar && selectPeriodo) {
         btnExportar.addEventListener('click', async function() {
+            // Obtener el período seleccionado
+            const periodo = selectPeriodo.value;
+
+            // Obtener el token JWT
+            const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+
+            if (!token) {
+                console.error('Error: No se encontró token JWT para exportar.');
+                alert('Por favor, inicie sesión para exportar los reportes.');
+                return;
+            }
+
             try {
-                const response = await fetch('/api/campesino/exportar_reportes', {
+                // Realizar la solicitud al backend con el período
+                const response = await fetch(`${API_BASE_URL}/api/campesino/exportar_reportes_pdf?periodo=${periodo}`, {
+                    method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
                 });
 
                 if (!response.ok) {
-                    throw new Error('Error al exportar los reportes');
+                    // Intentar leer el mensaje de error del backend
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Error al exportar los reportes.');
                 }
 
+                // Manejar la respuesta (esperamos un archivo PDF)
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'reportes_campesino.xlsx';
+                // Nombrar el archivo PDF con el período
+                a.download = `reporte_ventas_campesino_${periodo.replace(/ /g, '_').toLowerCase()}.pdf`;
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
 
             } catch (error) {
-                console.error('Error:', error);
-                alert('Error al exportar los reportes. Por favor, intente nuevamente.');
+                console.error('Error al exportar:', error);
+                alert(`Error al exportar los reportes: ${error.message}`);
             }
         });
+    }
+
+    // Cargar reportes al iniciar
+    cargarReportes();
+
+    // Manejar cambio de período
+    if (selectPeriodo) {
+        selectPeriodo.addEventListener('change', cargarReportes);
     }
 });

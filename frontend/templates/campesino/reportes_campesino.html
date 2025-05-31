@@ -20,12 +20,12 @@
                         <p class="text-sm text-gray-600">{{ campesino.nombre }} - {{ campesino.finca }}</p>
                     </div>
                     <div class="flex gap-4">
-                        <select class="rounded-md border-gray-300 shadow-sm">
+                        <select id="periodoReporte" class="rounded-md border-gray-300 shadow-sm">
                             <option>Último mes</option>
                             <option>Últimos 3 meses</option>
                             <option>Último año</option>
                         </select>
-                        <button class="bg-white text-gray-700 px-4 py-2 rounded-lg border hover:bg-gray-50 flex items-center">
+                        <button id="exportarReporteBtn" class="bg-white text-gray-700 px-4 py-2 rounded-lg border hover:bg-gray-50 flex items-center">
                             <i class="fas fa-download mr-2"></i>
                             Exportar
                         </button>
