@@ -62,23 +62,23 @@
                         <h3 class="text-gray-500 text-sm font-medium">Total Compras</h3>
                         <i class="fas fa-dollar-sign ml-2 text-green-600"></i>
                     </div>
-                    <p class="text-3xl font-bold text-green-800">
-                        $ 85,750,000 COP
-                    </p>
-                    <p class="text-sm text-green-600">+15.3% desde el trimestre pasado</p>
+                    <p class="text-3xl font-bold text-green-800" id="total-compras-value">Cargando...</p>
+                    <p class="text-sm text-green-600" id="total-compras-period">Cargando...</p>
                 </div>
 
                 <!-- Meta Trimestral -->
+                <!--
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center mb-2">
                         <h3 class="text-gray-500 text-sm font-medium">Meta Trimestral</h3>
                         <i class="fas fa-chart-line ml-2 text-green-600"></i>
                     </div>
-                    <p class="text-3xl font-bold text-green-800">65%</p>
+                    <p class="text-3xl font-bold text-green-800" id="meta-trimestral-value">Cargando...</p>
                     <div class="mt-2 w-full bg-green-200 rounded-full h-2">
-                        <div class="bg-green-600 h-2 rounded-full" style="width: 65%"></div>
+                        <div id="meta-trimestral-progress" class="bg-green-600 h-2 rounded-full" style="width: 0%"></div>
                     </div>
                 </div>
+                -->
 
                 <!-- Próxima Entrega -->
                 <div class="bg-white rounded-lg shadow p-6">
@@ -86,84 +86,97 @@
                         <h3 class="text-gray-500 text-sm font-medium">Próxima Entrega</h3>
                         <i class="fas fa-calendar ml-2 text-green-600"></i>
                     </div>
-                    <p class="text-3xl font-bold text-green-800">22 Mayo, 2025</p>
-                    <p class="text-sm text-gray-600">Faltan 4 días</p>
+                    <p class="text-3xl font-bold text-green-800" id="proxima-entrega-date">Cargando...</p>
+                    <p class="text-sm text-gray-600" id="proxima-entrega-days">Cargando...</p>
                 </div>
             </div>
 
             <!-- Compras Recientes & Reportes Tabs -->
             <div class="mb-8">
                 <div class="border-b border-gray-200">
-                    <nav class="-mb-px flex">
-                        <a href="#" class="px-6 py-3 border-b-2 border-green-600 text-green-600 font-medium">
+                    <nav class="-mb-px flex" id="dashboard-tabs">
+                        <a href="#" class="px-6 py-3 border-b-2 border-green-600 text-green-600 font-medium" data-tab="compras-recientes">
                             Compras Recientes
                         </a>
-                        <a href="#" class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium">
+                        <a href="#" class="px-6 py-3 text-gray-500 hover:text-gray-700 font-medium" data-tab="reportes">
                             Reportes
                         </a>
                     </nav>
                 </div>
 
-                <!-- Compras Recientes Table -->
-                <div class="bg-white shadow rounded-lg mt-4 p-6">
-                    <h3 class="text-lg font-medium mb-4">Compras Recientes</h3>
-                    <p class="text-sm text-gray-500 mb-6">Has realizado 3 compras en los últimos 2 meses</p>
-                    
-                    <div class="space-y-4">
-                        <!-- Compra Item -->
-                        <div class="flex items-center justify-between py-3 border-b">
-                            <div class="flex items-center">
-                                <i class="fas fa-coffee text-green-600 bg-green-100 p-2 rounded-full mr-4"></i>
-                                <div>
-                                    <p class="font-medium">Café Pergamino - 120 kg</p>
-                                    <p class="text-sm text-gray-500">12/05/2025 - Proveedor: Juan Pérez</p>
+                <!-- Tab Content -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div id="compras-recientes-tab" class="bg-white shadow rounded-lg p-6">
+                        <h3 class="text-lg font-medium mb-4">Compras Recientes</h3>
+                        <p class="text-sm text-gray-500 mb-6" id="compras-recientes-info">Cargando...</p>
+
+                        <div id="compras-recientes-list" class="space-y-4">
+                            <!-- Compra Item Template (will be populated by JS) -->
+                             <!--
+                             <div class="flex items-center justify-between py-3 border-b">
+                                <div class="flex items-center">
+                                    <i class="fas fa-coffee text-green-600 bg-green-100 p-2 rounded-full mr-4"></i>
+                                    <div>
+                                        <p class="font-medium">Café [Tipo] - [Cantidad] kg</p>
+                                        <p class="text-sm text-gray-500">[Fecha] - Proveedor: [Proveedor]</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="bg-[estado-color]-100 text-[estado-color]-800 px-2 py-1 rounded text-sm">[Estado]</span>
+                                    <p class="text-lg font-semibold mt-1">[Total] COP</p>
                                 </div>
                             </div>
-                            <div class="text-right">
-                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">Completado</span>
-                                <p class="text-lg font-semibold mt-1">10,200,000 COP</p>
+                            -->
+                             <p class="text-center text-gray-500">Cargando compras recientes...</p>
+                        </div>
+                    </div>
+
+                     <!-- Precios Actuales del Mercado -->
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Precios Actuales del Mercado</h3>
+                        <p class="text-sm text-gray-500 mb-6" id="precios-actualizacion-fecha">Cargando...</p>
+
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <!-- Café Pergamino (Arabica) -->
+                            <div class="space-y-4">
+                                <h4 class="font-medium">Café Pergamino (Arabica)</h4>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Precio por Kg</span>
+                                    <span class="font-medium" id="precio-arabica-kg">Cargando...</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Precio por Carga (125kg)</span>
+                                    <span class="font-medium" id="precio-arabica-carga">Cargando...</span>
+                                </div>
+                            </div>
+
+                            <!-- Pasilla -->
+                            <div class="space-y-4">
+                                <h4 class="font-medium">Pasilla</h4>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Precio por Kg</span>
+                                    <span class="font-medium" id="precio-pasilla-kg">Cargando...</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Precio por Arroba (12.5kg)</span>
+                                    <span class="font-medium" id="precio-pasilla-arroba">Cargando...</span>
+                                </div>
                             </div>
                         </div>
-
-                        <!-- More items... -->
                     </div>
                 </div>
-            </div>
 
-            <!-- Precios Actuales del Mercado -->
-            <div class="bg-white shadow rounded-lg p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-2">Precios Actuales del Mercado</h3>
-                <p class="text-sm text-gray-500 mb-6">Precios actualizados al 18 de Mayo, 2025</p>
-                
-                <div class="grid md:grid-cols-2 gap-6">
-                    <!-- Café Pergamino -->
-                    <div class="space-y-4">
-                        <h4 class="font-medium">Café Pergamino</h4>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Precio por Kg</span>
-                            <span class="font-medium">85,000 COP</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Precio por Carga (120kg)</span>
-                            <span class="font-medium">10,200,000 COP</span>
-                        </div>
-                    </div>
 
-                    <!-- Café Verde -->
-                    <div class="space-y-4">
-                        <h4 class="font-medium">Café Verde</h4>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Precio por Kg</span>
-                            <span class="font-medium">75,000 COP</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Precio por Carga (120kg)</span>
-                            <span class="font-medium">9,000,000 COP</span>
-                        </div>
-                    </div>
-                </div>
+                 <div id="reportes-tab" class="bg-white shadow rounded-lg mt-4 p-6 hidden">
+                     <h3 class="text-lg font-medium mb-4">Reportes</h3>
+                     <p class="text-sm text-gray-500 mb-6">Aquí verás tus reportes generados.</p>
+                     <!-- Content for Reports Tab -->
+                     <p class="text-center text-gray-500">Funcionalidad de reportes próximamente...</p>
+                 </div>
             </div>
         </main>
     </div>
 </div>
+
+<script src="{{ url_for('static', filename='js/dashboard_empresa.js') }}"></script>
 {% endblock %}

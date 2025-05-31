@@ -62,7 +62,7 @@ def get_compras_empresa():
 def get_estadisticas_compras():
     try:
         current_user_id = get_jwt_identity()
-        print(f"Obteniendo estadísticas para empresa_id: {current_user_id}") # Debug
+        print(f"Obteniendo estadísticas para empresa_id: {current_user_id}")  # Debug
 
         total_compras_cantidad = db.session.query(func.sum(CompraEmpresa.cantidad))\
             .filter_by(empresa_id=current_user_id).scalar() or 0
@@ -71,26 +71,29 @@ def get_estadisticas_compras():
         total_compras_count = db.session.query(func.count(CompraEmpresa.id))\
             .filter_by(empresa_id=current_user_id).scalar() or 0
 
-        completadas_count = db.session.query(func.count(CompraEmpresa.id))\
-            .filter_by(empresa_id=current_user_id, estado=EstadoCompraEnum.Completada.value).scalar() or 0
-        en_transito_count = db.session.query(func.count(CompraEmpresa.id))\
-            .filter_by(empresa_id=current_user_id, estado=EstadoCompraEnum.Pendiente.value).scalar() or 0
-        confirmadas_count = db.session.query(func.count(CompraEmpresa.id))\
-            .filter_by(empresa_id=current_user_id, estado=EstadoCompraEnum.Confirmadas.value).scalar() or 0
+        # Obtener la próxima entrega (suponiendo que es la fecha de entrega más cercana)
+        proxima_entrega = db.session.query(func.min(CompraEmpresa.fecha_entrega))\
+            .filter(CompraEmpresa.empresa_id == current_user_id, CompraEmpresa.fecha_entrega != None).scalar()
 
-        precio_promedio = (total_inversion / total_compras_count) if total_compras_count > 0 else 0
+        # Calcular días restantes hasta la próxima entrega
+        if proxima_entrega:
+            dias_restantes = (proxima_entrega - datetime.now()).days
+            proxima_entrega_str = proxima_entrega.strftime('%d %B, %Y')
+        else:
+            dias_restantes = None
+            proxima_entrega_str = None
 
         estadisticas = {
             'total_compras_cantidad': float(total_compras_cantidad),
             'total_inversion': float(total_inversion),
             'total_compras_count': total_compras_count,
-            'completadas_count': completadas_count,
-            'en_transito_count': en_transito_count,
-            'confirmadas_count': confirmadas_count,
-            'precio_promedio': float(precio_promedio)
+            'proxima_entrega': {
+                'fecha': proxima_entrega_str,
+                'dias': dias_restantes
+            }
         }
 
-        print(f"Estadísticas calculadas: {estadisticas}") # Debug
+        print(f"Estadísticas calculadas: {estadisticas}")  # Debug
         return jsonify({'estadisticas': estadisticas}), 200
 
     except Exception as e:
