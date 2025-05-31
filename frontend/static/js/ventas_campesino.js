@@ -227,7 +227,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                        <button class="text-gray-400 hover:text-gray-600"><i class="fas fa-ellipsis-v"></i></button>
+                        <a href="#" class="text-gray-400 hover:text-gray-600 download-factura-btn" data-venta-id="${venta.id}">
+                            <i class="fas fa-download"></i>
+                        </a>
                     </td>
                 </tr>
             `;
@@ -485,7 +487,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                        <button class="text-gray-400 hover:text-gray-600"><i class="fas fa-ellipsis-v"></i></button>
+                        <a href="#" class="text-gray-400 hover:text-gray-600 download-factura-btn" data-venta-id="${venta.id}">
+                            <i class="fas fa-download"></i>
+                        </a>
                     </td>
                 </tr>
             `;
@@ -552,5 +556,72 @@ document.addEventListener('DOMContentLoaded', function() {
             // Formatear a COP con separadores de miles y dos decimales
             promedioValueElement.innerText = `${promedioIngresos.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} COP`;
         }
+    }
+
+    // Función para descargar la factura
+    async function downloadFactura(ventaId) {
+        const jwtToken = localStorage.getItem('access_token');
+
+        if (!jwtToken) {
+            console.error('No JWT token found for factura download.');
+            alert('Por favor, inicie sesión para descargar la factura.');
+            window.location.href = '/campesino/login';
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://127.0.0.1:5000/api/ventas/${ventaId}/factura`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + jwtToken,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                 const errorData = await response.json();
+                 throw new Error(errorData.error || 'Error al descargar la factura');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            // Intentar obtener el nombre del archivo del encabezado Content-Disposition
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let filename = `factura_venta_${ventaId}.pdf`; // Nombre por defecto
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+        } catch (error) {
+            console.error('Error downloading factura:', error);
+            alert(`Error al descargar la factura: ${error.message}`);
+        }
+    }
+
+    // Añadir event listener a la tabla para los botones de descarga
+    const ventasTableBody = document.querySelector('#ventasTable tbody');
+    if (ventasTableBody) {
+        ventasTableBody.addEventListener('click', function(event) {
+            const target = event.target;
+            // Verificar si se hizo clic en el ícono o el enlace de descarga
+            const downloadLink = target.closest('.download-factura-btn');
+            if (downloadLink) {
+                event.preventDefault(); // Prevenir el comportamiento por defecto del enlace
+                const ventaId = downloadLink.getAttribute('data-venta-id');
+                if (ventaId) {
+                    downloadFactura(ventaId);
+                }
+            }
+        });
     }
 }); 

@@ -302,4 +302,111 @@ def exportar_reportes_campesino_pdf():
         import traceback
         print("ERROR IN exportar_reportes_campesino_pdf:")
         traceback.print_exc()
-        return jsonify({'error': f'Error interno al generar el reporte PDF: {e}'}), 500 
+        return jsonify({'error': f'Error interno al generar el reporte PDF: {e}'}), 500
+
+# Nueva ruta para descargar factura de venta específica
+@ventas_bp.route('/ventas/<int:venta_id>/factura', methods=['GET', 'OPTIONS'])
+@jwt_required()
+def descargar_factura_venta(venta_id):
+    # Manejar solicitudes OPTIONS para CORS preflight
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
+    current_user_id = get_jwt_identity()
+    campesino = Usuario.query.get(current_user_id)
+
+    if not campesino or campesino.tipo != 'campesino':
+        return jsonify({'msg': 'Acceso denegado'}), 403
+
+    try:
+        # Obtener la venta específica y verificar que pertenezca al campesino autenticado
+        venta = Venta.query.filter_by(id=venta_id, campesino_id=campesino.id).options(db.joinedload(Venta.empresa)).first()
+
+        if not venta:
+            return jsonify({'message': 'Factura no encontrada o no tienes permiso para descargarla.'}), 404
+
+        # Si la venta existe y pertenece al usuario, generar el PDF de la factura
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        elements = []
+
+        # Estilos
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
+        from reportlab.lib.units import inch
+        from reportlab.lib import colors
+
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='FacturaTitle', fontSize=18, spaceAfter=20, alignment=1, bold=1))
+        styles.add(ParagraphStyle(name='SectionTitle', fontSize=14, spaceAfter=10, bold=1))
+        styles.add(ParagraphStyle(name='InfoText', fontSize=10, spaceAfter=5))
+
+        # Título de la Factura
+        elements.append(Paragraph(f'Factura de Venta #{venta.id}', styles['FacturaTitle']))
+
+        # Información del Vendedor (Campesino)
+        elements.append(Paragraph('Información del Vendedor (Campesino):', styles['SectionTitle']))
+        elements.append(Paragraph(f'Nombre: {campesino.nombre}', styles['InfoText']))
+        elements.append(Paragraph(f'Finca: {campesino.direccion_finca if campesino.direccion_finca else "N/A"}', styles['InfoText']))
+        elements.append(Paragraph(f'Cédula: {campesino.cedula if campesino.cedula else "N/A"}', styles['InfoText']))
+        elements.append(Spacer(1, 0.2*inch))
+
+        # Información del Comprador (CafExport)
+        elements.append(Paragraph('Información del Comprador:', styles['SectionTitle']))
+        # Asumo que CafExport es una entidad fija o representada de alguna manera
+        elements.append(Paragraph('Nombre Empresa: CafExport', styles['InfoText']))
+        # Puedes añadir más detalles de CafExport si están disponibles en tu modelo de usuario o configuración
+        elements.append(Spacer(1, 0.2*inch))
+
+        # Detalles de la Venta
+        elements.append(Paragraph('Detalles de la Venta:', styles['SectionTitle']))
+        data = [
+            ['Concepto', 'Cantidad (kg)', 'Precio/kg (COP)', 'Total (COP)']
+        ]
+        data.append([
+            f'Venta de {venta.tipo_cafe.value if venta.tipo_cafe else "Café"}',
+            f'{venta.cantidad:.2f}' if venta.cantidad is not None else '',
+            f'{venta.precio_kg:,.0f}' if venta.precio_kg is not None else '',
+            f'{venta.total:,.0f}' if venta.total is not None else ''
+        ])
+
+        table = Table(data)
+        style = TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.Color(0.08, 0.44, 0.25, 1)), # Verde oscuro
+            ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,0), 10),
+            ('BOTTOMPADDING', (0,0), (-1,0), 12),
+            ('BACKGROUND', (0,1), (-1,-1), colors.beige),
+            ('GRID', (0,0), (-1,-1), 1, colors.black)
+        ])
+        table.setStyle(style)
+        elements.append(table)
+
+        elements.append(Spacer(1, 0.2*inch))
+
+        # Total de la Factura
+        elements.append(Paragraph(f"<b>Total Factura:</b> {venta.total:,.0f} COP", styles['InfoText']))
+        elements.append(Paragraph(f"Fecha de Venta: {venta.fecha.strftime('%Y-%m-%d') if venta.fecha else 'N/A'}", styles['InfoText']))
+
+        # Construir el PDF
+        doc.build(elements)
+
+        # Obtener el contenido del PDF y enviarlo
+        pdf_content = buffer.getvalue()
+        buffer.close()
+
+        from flask import make_response
+        response = make_response(pdf_content)
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'attachment; filename=factura_venta_{venta.id}.pdf'
+        response.headers['Access-Control-Expose-Headers'] = 'Content-Disposition' # Exponer header
+
+        return response, 200
+
+    except Exception as e:
+        import traceback
+        print("ERROR IN descargar_factura_venta:")
+        traceback.print_exc()
+        return jsonify({'error': f'Error interno al generar la factura: {e}'}), 500 
