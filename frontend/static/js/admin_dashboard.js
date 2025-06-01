@@ -61,11 +61,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${venta.precio_kg !== undefined ? formatCOP(venta.precio_kg) + '/kg' : 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${venta.total !== undefined ? formatCOP(venta.total) : 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getEstadoClass(estadoVenta)}">${estadoVenta}</span></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><a href="#" class="text-green-600 hover:text-green-900">Edit</a></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><button class="btn-edit-estado text-green-600 hover:text-green-900" data-id="${venta.id}" data-tipo="venta" data-estado="${estadoVenta}">Edit</button></td>
                     </tr>
                 `;
                 tbody.innerHTML += row;
             });
+
+            agregarEventosEdit();
 
         } catch (error) {
             console.error('Error loading ventas table:', error);
@@ -111,11 +113,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${compra.precio_kg !== undefined ? formatCOP(compra.precio_kg) + '/kg' : 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${compra.total !== undefined ? formatCOP(compra.total) : 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getEstadoClass(estadoCompra)}">${estadoCompra}</span></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><a href="#" class="text-green-600 hover:text-green-900">Edit</a></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><button class="btn-edit-estado text-green-600 hover:text-green-900" data-id="${compra.id}" data-tipo="compra" data-estado="${estadoCompra}">Edit</button></td>
                     </tr>
                 `;
                 tbody.innerHTML += row;
             });
+
+            agregarEventosEdit();
 
         } catch (error) {
             console.error('Error loading compras table:', error);
@@ -147,6 +151,58 @@ document.addEventListener('DOMContentLoaded', () => {
         if (amount === undefined || amount === null) return 'N/A';
         return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(amount);
     };
+
+    function agregarEventosEdit() {
+        document.querySelectorAll('.btn-edit-estado').forEach(btn => {
+            btn.onclick = function() {
+                const id = this.dataset.id;
+                const tipo = this.dataset.tipo;
+                const estado = this.dataset.estado;
+                abrirModalEstado(id, tipo, estado);
+            }
+        });
+    }
+
+    // Función para abrir el modal y cargar datos
+    function abrirModalEstado(id, tipo, estadoActual) {
+        document.getElementById('modal-item-id').value = id;
+        document.getElementById('modal-item-tipo').value = tipo;
+        document.getElementById('modal-estado-actual').textContent = estadoActual;
+        document.getElementById('modal-nuevo-estado').value = estadoActual;
+        document.getElementById('modal-cambiar-estado').classList.remove('hidden');
+    }
+    function cerrarModalEstado() {
+        document.getElementById('modal-cambiar-estado').classList.add('hidden');
+    }
+
+    // Enviar el cambio de estado
+    const form = document.getElementById('form-cambiar-estado');
+    if(form) {
+        form.onsubmit = async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('modal-item-id').value;
+            const tipo = document.getElementById('modal-item-tipo').value;
+            const nuevoEstado = document.getElementById('modal-nuevo-estado').value;
+            let url = '';
+            if(tipo === 'venta') {
+                url = `/admin/ventas/${id}/estado`;
+            } else {
+                url = `/admin/compras/${id}/estado`;
+            }
+            const resp = await fetch(url, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ estado: nuevoEstado })
+            });
+            if(resp.ok) {
+                cerrarModalEstado();
+                if(typeof loadVentasTable === 'function') loadVentasTable();
+                if(typeof loadComprasTable === 'function') loadComprasTable();
+            } else {
+                alert('Error al actualizar el estado');
+            }
+        }
+    }
 
     // Llamar a las funciones para cargar datos cuando la página se cargue
     loadAdminStats();
