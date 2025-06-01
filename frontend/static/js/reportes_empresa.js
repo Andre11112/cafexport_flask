@@ -44,6 +44,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Actualizar gráficos
             updateComprasPorMesChart(data.compras_por_mes);
             updateComprasPorTipoChart(data.compras_por_tipo);
+            updateEvolucionPreciosCompraChart(data.precio_promedio_por_mes);
+
+            // Poblar historial de compras
+            populateHistorialComprasTable(data.historial_compras);
         })
         .catch(error => {
             console.error('Error:', error);
@@ -96,6 +100,113 @@ document.addEventListener('DOMContentLoaded', function() {
                 maintainAspectRatio: false
             }
         });
+    }
+
+    // Función para actualizar el gráfico de evolución de precios de compra
+    function updateEvolucionPreciosCompraChart(data) {
+        const ctx = document.getElementById('evolucionPreciosCompraChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(item => item.mes),
+                datasets: [{
+                    label: 'Precio Promedio (COP/kg)',
+                    data: data.map(item => item.precio_promedio),
+                    borderColor: 'rgb(234, 179, 8)', // Color amarillo/naranja
+                    tension: 0.1,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                 scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return formatCOP(value); // Usar la función de formato para el eje Y
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Precio Promedio: ${formatCOP(context.raw)}/kg`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Función para poblar la tabla del historial de compras
+    function populateHistorialComprasTable(compras) {
+        const container = document.getElementById('historialComprasTableContainer');
+        if (!container) {
+            console.error('Contenedor de historial de compras no encontrado!');
+            return;
+        }
+
+        // Limpiar contenido actual
+        container.innerHTML = '';
+
+        if (!compras || compras.length === 0) {
+            container.innerHTML = '<p class="text-gray-500">No hay historial de compras disponible.</p>';
+            return;
+        }
+
+        // Crear estructura de tabla
+        let tableHTML = `
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Orden</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo Café</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad (kg)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio/kg (COP)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total (COP)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notas</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendedor</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+        `;
+
+        // Llenar tabla con datos
+        compras.forEach(compra => {
+            tableHTML += `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${compra.fecha_orden ? new Date(compra.fecha_orden).toLocaleDateString('es-CO') : 'N/A'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            ${compra.tipo_cafe || 'N/A'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${compra.cantidad !== null ? formatNumber(compra.cantidad, 2) : 'N/A'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${compra.precio_kg !== null ? formatCOP(compra.precio_kg) : 'N/A'}/kg</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${compra.total !== null ? formatCOP(compra.total) : 'N/A'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                         <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${compra.estado === 'Completada' ? 'bg-green-100 text-green-800' : compra.estado === 'Pendiente' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}">
+                            ${compra.estado || 'N/A'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${compra.notas || 'N/A'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${compra.vendedor || 'N/A'}</td>
+                </tr>
+            `;
+        });
+
+        tableHTML += `
+                </tbody>
+            </table>
+        `;
+
+        container.innerHTML = tableHTML;
     }
 
     // Cargar reportes al iniciar

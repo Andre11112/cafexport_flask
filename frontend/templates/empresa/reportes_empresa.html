@@ -95,22 +95,22 @@
                 </div>
             </div>
 
-            <!-- Reportes Section -->
-            <div class="mt-8">
-                <h3 class="text-lg font-medium mb-4">Reportes</h3>
-                {% if data %}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {% for reporte in data %}
-                            <div class="bg-white rounded-lg shadow p-6">
-                                <h4 class="text-lg font-medium">{{ reporte.titulo }}</h4>
-                                <p>{{ reporte.descripcion }}</p>
-                                <p class="text-sm text-gray-600">Fecha: {{ reporte.fecha }}</p>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p>No hay reportes disponibles.</p>
-                {% endif %}
+            <!-- Historial de Compras Section -->
+            <div class="bg-white rounded-lg shadow p-6 mt-8">
+                <h3 class="text-lg font-medium mb-4">Historial de Compras</h3>
+                <div id="historialComprasTableContainer">
+                    {# La tabla de historial de compras se cargará aquí dinámicamente con JS #}
+                    <p class="text-gray-500">Cargando historial de compras...</p>
+                </div>
+            </div>
+
+            <!-- Evolución de Precios de Compra Section -->
+            <div class="bg-white rounded-lg shadow p-6 mt-8">
+                <h3 class="text-lg font-medium mb-4">Evolución de Precios de Compra</h3>
+                <p class="text-sm text-gray-600 mb-4">Comparativa de precios pagados por tipo de café en los últimos meses</p>
+                <div class="h-64">
+                    <canvas id="evolucionPreciosCompraChart"></canvas>
+                </div>
             </div>
 
             <div class="error-message text-red-500 mb-4"></div>

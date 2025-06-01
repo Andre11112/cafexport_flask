@@ -54,6 +54,32 @@ def get_reportes_empresa():
          .order_by('mes')\
          .limit(12).all()
         
+        # Obtener precio promedio de compra por mes
+        precio_promedio_por_mes = db.session.query(
+            func.date_trunc('month', CompraEmpresa.fecha_orden).label('mes'),
+            (func.sum(CompraEmpresa.total) / func.sum(CompraEmpresa.cantidad)).label('precio_promedio')
+        ).filter_by(empresa_id=current_user_id)\
+         .group_by('mes')\
+         .order_by('mes')\
+         .limit(12).all() or []
+        
+        # Obtener historial detallado de compras
+        historial_compras = CompraEmpresa.query.filter_by(empresa_id=current_user_id).order_by(CompraEmpresa.fecha_orden.desc()).all()
+
+        historial_compras_data = []
+        for compra in historial_compras:
+            historial_compras_data.append({
+                'id': compra.id,
+                'fecha_orden': compra.fecha_orden.strftime('%Y-%m-%d %H:%M:%S') if compra.fecha_orden else None,
+                'tipo_cafe': compra.tipo_cafe.value if compra.tipo_cafe else None,
+                'cantidad': float(compra.cantidad) if compra.cantidad is not None else None,
+                'precio_kg': float(compra.precio_kg) if compra.precio_kg is not None else None,
+                'total': float(compra.total) if compra.total is not None else None,
+                'estado': compra.estado.value if compra.estado else None,
+                'notas': compra.notas,
+                'vendedor': compra.cafexport_vendedor.nombre if compra.cafexport_vendedor else 'N/A' # Asumiendo que CafExport es el vendedor
+            })
+        
         # Formatear datos para la respuesta
         reportes = {
             'estadisticas': {
@@ -75,7 +101,14 @@ def get_reportes_empresa():
                     'mes': mes.strftime('%Y-%m'),
                     'total': float(total)
                 } for mes, total in compras_por_mes
-            ]
+            ],
+            'precio_promedio_por_mes': [
+                {
+                    'mes': mes.strftime('%Y-%m'),
+                    'precio_promedio': float(precio_promedio)
+                } for mes, precio_promedio in precio_promedio_por_mes
+            ],
+            'historial_compras': historial_compras_data
         }
         
         return jsonify(reportes), 200
