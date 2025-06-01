@@ -11,6 +11,11 @@ compra_bp = Blueprint('compra', __name__, url_prefix='/empresa')
 def empresa_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
+        # Permitir solicitudes OPTIONS sin verificar JWT
+        if request.method == 'OPTIONS':
+            # Dejar que el siguiente decorador o la función maneje la respuesta OPTIONS
+            return fn(*args, **kwargs)
+
         verify_jwt_in_request()
         current_user_id = get_jwt_identity()
         user = Usuario.query.get(current_user_id)
@@ -180,5 +185,127 @@ def get_precios_cafe():
         print(f"Error al obtener precios de la API de ventas: {e}")
         return jsonify({'message': 'Error al obtener precios de café de la fuente externa'}), 500
     except Exception as e:
-        print(f"Error inesperado al procesar precios: {e}")
-        return jsonify({'message': 'Error interno al procesar precios de café'}), 500 
+        print(f"Error interno al procesar precios de café: {e}")
+        return jsonify({'message': 'Error interno al procesar precios de café'}), 500
+
+# Nueva ruta para descargar la factura de una compra específica
+@compra_bp.route('/compras/<int:compra_id>/factura', methods=['GET', 'OPTIONS'])
+@jwt_required()
+@empresa_required
+def descargar_factura_compra(compra_id):
+     # Manejar solicitudes OPTIONS para CORS preflight
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
+    current_user_id = get_jwt_identity()
+    empresa = Usuario.query.get(current_user_id)
+
+    # Asegurarse de que la compra pertenezca a la empresa loggeada
+    compra = CompraEmpresa.query.filter_by(id=compra_id, empresa_id=empresa.id).first()
+
+    if not compra:
+        return jsonify({'message': 'Compra no encontrada o no pertenece a esta empresa'}), 404
+
+    try:
+        # Importaciones para PDF (ReportLab)
+        import io
+        from reportlab.lib.pagesizes import letter
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import inch
+        from reportlab.lib import colors
+        from datetime import datetime
+        
+        # Buffer para el PDF
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        elements = []
+
+        # Estilos
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='InvoiceTitle', fontSize=18, spaceAfter=18, alignment=1, bold=1))
+        styles.add(ParagraphStyle(name='HeaderInfo', fontSize=10, spaceAfter=6))
+        styles.add(ParagraphStyle(name='SectionTitle', fontSize=12, spaceAfter=8, bold=1))
+        styles.add(ParagraphStyle(name='DetailText', fontSize=10, spaceAfter=4))
+
+        # Información de la Factura
+        elements.append(Paragraph('Factura de Compra', styles['InvoiceTitle']))
+        elements.append(Paragraph(f'Factura No. {compra.id}', styles['HeaderInfo']))
+        elements.append(Paragraph(f'Fecha de Orden: {compra.fecha_orden.strftime("%Y-%m-%d") if compra.fecha_orden else "N/A"}', styles['HeaderInfo']))
+        elements.append(Paragraph(f'Fecha de Emisión: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}', styles['HeaderInfo']))
+        elements.append(Spacer(1, 0.3*inch))
+
+        # Información de la Empresa (Comprador)
+        elements.append(Paragraph('Comprador:', styles['SectionTitle']))
+        elements.append(Paragraph(f'Empresa: {empresa.nombre}', styles['DetailText']))
+        # Asumiendo que el modelo Usuario tiene campos como direccion, ciudad, etc.
+        # elements.append(Paragraph(f'Dirección: {empresa.direccion}', styles['DetailText']))
+        # elements.append(Paragraph(f'Ciudad: {empresa.ciudad}', styles['DetailText']))
+        elements.append(Spacer(1, 0.2*inch))
+
+        # Información del Vendedor
+        vendedor_nombre = compra.cafexport_vendedor.nombre if compra.cafexport_vendedor else 'N/A'
+        elements.append(Paragraph('Vendedor:', styles['SectionTitle']))
+        elements.append(Paragraph(f'Nombre: {vendedor_nombre}', styles['DetailText']))
+        # Asumiendo que el modelo Usuario tiene campos como direccion, ciudad, etc.
+        # elements.append(Paragraph(f'Dirección: {compra.cafexport_vendedor.direccion}', styles['DetailText']))
+        # elements.append(Paragraph(f'Ciudad: {compra.cafexport_vendedor.ciudad}', styles['DetailText']))
+        elements.append(Spacer(1, 0.3*inch))
+
+        # Detalles de la Compra (Tabla)
+        elements.append(Paragraph('Detalle de la Compra:', styles['SectionTitle']))
+        data = [
+            ['Tipo Café', 'Cantidad (kg)', 'Precio/kg (COP)', 'Total (COP)', 'Estado']
+        ]
+        data.append([
+             compra.tipo_cafe.value if compra.tipo_cafe else 'N/A',
+             f'{compra.cantidad:.2f}' if compra.cantidad is not None else 'N/A',
+             f'{compra.precio_kg:,.0f}' if compra.precio_kg is not None else 'N/A',
+             f'{compra.total:,.0f}' if compra.total is not None else 'N/A',
+             compra.estado.value if compra.estado else 'N/A'
+        ])
+
+        table = Table(data)
+        style = TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.Color(0.08, 0.44, 0.25, 1)), # Verde oscuro
+            ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,0), 10),
+            ('BOTTOMPADDING', (0,0), (-1,0), 12),
+            ('BACKGROUND', (0,1), (-1,-1), colors.Color(0.95, 0.95, 0.95, 1)), # Gris muy claro para filas impares
+             #('BACKGROUND', (0,2), (-1,-1), colors.Color(0.85, 0.95, 0.85, 1)), # Verde claro para filas pares (alternado)
+            ('GRID', (0,0), (-1,-1), 1, colors.black),
+            ('BOX', (0,0), (-1,-1), 1, colors.black)
+        ])
+        table.setStyle(style)
+        elements.append(table)
+
+        elements.append(Spacer(1, 0.3*inch))
+
+        # Notas (si existen)
+        if compra.notas:
+            elements.append(Paragraph('Notas:', styles['SectionTitle']))
+            elements.append(Paragraph(compra.notas, styles['DetailText']))
+            elements.append(Spacer(1, 0.2*inch))
+
+        # Construir el PDF
+        doc.build(elements)
+
+        # Obtener el contenido del PDF y enviarlo
+        pdf_content = buffer.getvalue()
+        buffer.close()
+
+        from flask import make_response
+        response = make_response(pdf_content)
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'attachment; filename=factura_compra_{compra_id}.pdf'
+        response.headers['Access-Control-Expose-Headers'] = 'Content-Disposition' # Exponer header
+
+        return response, 200
+
+    except Exception as e:
+        import traceback
+        print("ERROR IN descargar_factura_compra:")
+        traceback.print_exc()
+        return jsonify({'error': f'Error interno al generar la factura PDF de compra: {e}'}), 500 

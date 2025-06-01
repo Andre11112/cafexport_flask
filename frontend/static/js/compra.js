@@ -176,7 +176,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <button class="text-gray-400 hover:text-gray-600" onclick="verDetallesCompra(${compra.id})">
+                                <button class="text-gray-400 hover:text-gray-600 download-factura-btn" data-id="${compra.id}" title="Descargar Factura">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="text-gray-400 hover:text-gray-600 view-details-btn" data-id="${compra.id}" title="Ver Detalles">
                                     <i class="fas fa-ellipsis-v"></i>
                                 </button>
                             </td>
@@ -197,9 +200,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="text-sm text-gray-600 mb-2">Proveedor: ${compra.vendedor_nombre || 'CafExport'}</div>
                             <div class="flex justify-between items-center">
                                 <span class="text-lg font-semibold text-green-800">${compra.total ? formatCOP(parseFloat(compra.total)) : 'N/A'}</span>
-                                <button class="text-gray-400 hover:text-gray-600" onclick="verDetallesCompra(${compra.id})">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                </button>
+                                <div class="flex space-x-2 items-center">
+                                     <button class="text-gray-400 hover:text-gray-600 download-factura-btn" data-id="${compra.id}" title="Descargar Factura">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button class="text-gray-400 hover:text-gray-600 view-details-btn" data-id="${compra.id}" title="Ver Detalles">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -241,6 +249,76 @@ document.addEventListener('DOMContentLoaded', function() {
     function verDetallesCompra(id) {
         console.log('Ver detalles de compra:', id);
         // Implementar lógica para mostrar detalles
+    }
+
+    // Función para descargar la factura de una compra
+    async function downloadFacturaCompra(compraId) {
+        if (!checkAuth()) return;
+
+        const token = getJwtToken();
+        if (!token) {
+            console.error('No JWT token found for invoice download.');
+            alert('Por favor, inicie sesión para descargar facturas.');
+            return;
+        }
+
+        try {
+            console.log(`Attempting to download invoice for purchase ID: ${compraId}`);
+            // Asumo que la URL en el backend será /empresa/compras/<compra_id>/factura
+            const response = await fetch(`http://127.0.0.1:5000/empresa/compras/${compraId}/factura`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                }
+            });
+
+            console.log('Invoice response status:', response.status);
+
+            if (!response.ok) {
+                 const errorData = await response.json();
+                 console.error('Error downloading invoice:', errorData);
+                 throw new Error(errorData.error || errorData.message || 'Error al descargar la factura.');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+
+            // Intenta obtener el nombre del archivo del encabezado Content-Disposition
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let filename = `factura_compra_${compraId}.pdf`;
+            if (contentDisposition) {
+                 const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+                 if (filenameMatch && filenameMatch[1]) {
+                     filename = filenameMatch[1];
+                 }
+            }
+
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+        } catch (error) {
+            console.error('Error downloading invoice:', error);
+            alert(`Error al descargar la factura: ${error.message}`);
+        }
+    }
+
+    // Event listener para los botones de descarga de factura
+    // Usamos delegación de eventos en el cuerpo de la tabla
+    if (comprasTableBody) {
+        comprasTableBody.addEventListener('click', function(event) {
+            const target = event.target.closest('.download-factura-btn');
+            if (target) {
+                const compraId = target.dataset.id;
+                if (compraId) {
+                    downloadFacturaCompra(compraId);
+                }
+            }
+        });
     }
 
     // Función para abrir el modal
