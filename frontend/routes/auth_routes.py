@@ -40,3 +40,51 @@ def login():
         except requests.RequestException as e:
             flash(f'Error de conexión: {str(e)}', 'error')
     return render_template('auth/login.html')
+
+@auth_bp.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        email = request.form.get('identificador')
+        password = request.form.get('password')
+        
+        # Datos a enviar al backend API
+        login_data = {
+            'identificador': email,
+            'password': password,
+            'tipo_usuario': 'admin'
+        }
+        
+        try:
+            # Llamar al backend API para autenticar
+            backend_url = f"{Config.API_URL}/api/auth/login"
+            headers = {'Content-Type': 'application/json'}
+            response = requests.post(backend_url, json=login_data, headers=headers)
+            
+            if response.status_code == 200:
+                # Login exitoso en el backend, establecer sesión en el frontend
+                user_data = response.json().get('usuario')
+                session['user_id'] = user_data['id']
+                session['user_name'] = user_data['nombre']
+                session['user_email'] = user_data['email']
+                session['user_type'] = user_data['tipo'] # Guardar el tipo de usuario
+                flash('Inicio de sesión de administrador exitoso', 'success')
+                return redirect(url_for('auth.admin_dashboard'))
+            else:
+                # Error en el login según el backend
+                error_message = response.json().get('error', 'Error desconocido en el backend')
+                flash(f'Error en el login: {error_message}', 'error')
+                
+        except requests.RequestException as e:
+            # Error de conexión con el backend
+            flash(f'Error de conexión con el servidor de autenticación: {e}', 'error')
+        except Exception as e:
+            # Otros errores inesperados
+            flash(f'Ocurrió un error inesperado: {e}', 'error')
+            
+    # Renderizar el template para GET o si el POST falla
+    return render_template('admin/admin_login.html')
+
+@auth_bp.route('/admin/dashboard')
+def admin_dashboard():
+    # Aquí podrías añadir lógica para cargar datos del dashboard
+    return render_template('admin/admin_dashboard.html')

@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Administrador{% endblock %}
+
+{% block content %}
+<div class="flex h-screen bg-gray-50">
+    {# Include Admin Sidebar (will need to create or adapt one) #}
+    {% include "admin/sidebar.html" %}
+
+    <!-- Contenido Principal -->
+    <div class="flex-1 overflow-auto">
+        <header class="bg-white shadow">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold text-green-800">Panel de Administración</h2>
+                    <p class="text-sm text-gray-600">Gestión de campesinos, empresas, ventas y compras</p>
+    </div>
+                {# Optional: Add a button here if needed for admin actions #}
+                {#
+                <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center">
+                     <i class="fas fa-plus mr-2"></i> Accion Admin
+                </button>
+                #}
+            </div>
+        </header>
+
+        <!-- Contenido del Dashboard Admin -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Tarjetas de estadísticas -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <!-- Card Campesinos -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-users text-xl text-green-700 mr-3"></i>
+                        <h3 class="text-gray-500 text-sm font-medium">Campesinos</h3>
+                    </div>
+                    <p class="text-3xl font-bold text-green-800" id="total-campesinos">5</p> <!-- Replace with dynamic data -->
+                    <small class="text-gray-600">Productores registrados</small>
+                </div>
+
+                <!-- Card Empresas -->
+                <div class="bg-white rounded-lg shadow p-6">
+                     <div class="flex items-center mb-2">
+                         <i class="fas fa-building text-xl text-green-700 mr-3"></i>
+                        <h3 class="text-gray-500 text-sm font-medium">Empresas</h3>
+                    </div>
+                    <p class="text-3xl font-bold text-green-800" id="total-empresas">5</p> <!-- Replace with dynamic data -->
+                    <small class="text-gray-600">Compradores registrados</small>
+                </div>
+
+                <!-- Card Volumen Total -->
+                <div class="bg-white rounded-lg shadow p-6">
+                     <div class="flex items-center mb-2">
+                        <i class="fas fa-weight-hanging text-xl text-green-700 mr-3"></i>
+                        <h3 class="text-gray-500 text-sm font-medium">Volumen Total</h3>
+                     </div>
+                    <p class="text-3xl font-bold text-green-800" id="volumen-total">...</p> <!-- Add ID here -->
+                    <small class="text-gray-600">Café comercializado</small>
+                </div>
+
+                <!-- Card Valor Total -->
+                <div class="bg-white rounded-lg shadow p-6">
+                     <div class="flex items-center mb-2">
+                        <i class="fas fa-money-bill-wave text-xl text-green-700 mr-3"></i>
+                        <h3 class="text-gray-500 text-sm font-medium">Valor Total</h3>
+                    </div>
+                    <p class="text-3xl font-bold text-green-800" id="valor-total">...</p> <!-- Add ID here -->
+                    <small class="text-gray-600">Transacciones realizadas</small>
+            </div>
+            </div>
+
+            <!-- Tabs for Ventas/Compras -->
+            <div class="flex mb-4 border-b border-gray-200">
+                <button class="tab-button px-4 py-2 text-sm font-medium text-gray-700 border-b-2 border-transparent hover:text-gray-900 hover:border-gray-300 focus:outline-none data-[state=active]:text-green-700 data-[state=active]:border-green-700" data-tab="ventas-campesinos">Ventas de Campesinos</button>
+                <button class="tab-button px-4 py-2 text-sm font-medium text-gray-700 border-b-2 border-transparent hover:text-gray-900 hover:border-gray-300 focus:outline-none data-[state=active]:text-green-700 data-[state=active]:border-green-700" data-tab="compras-empresas">Compras de Empresas</button>
+            </div>
+
+            <!-- Tab Content Sections -->
+            <div id="ventas-campesinos-section" class="tab-content bg-white shadow rounded-lg mb-8" data-tab-content="ventas-campesinos">
+                 <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Gestión de Ventas</h3>
+                    <p class="mt-1 text-sm text-gray-500">Administra las ventas de los campesinos</p>
+        </div>
+
+                <div class="p-6">
+                     {# Table Header/Controls #}
+                    <div class="flex justify-between items-center mb-4">
+                         <input type="text" placeholder="Buscar venta..." class="px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                         <select class="px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                    <option value="">Todos los estados</option>
+                            {# Dynamic options for states here #}
+                </select>
+            </div>
+
+                    <!-- Tabla de Ventas -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Campesino</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {# Example row - replace with dynamic data loop #}
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">15/05/2025</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Juan Pérez<br><small class="text-gray-500">El Paraíso</small></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Pergamino</span></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">10 kg</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">85,000 COP/kg</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">850,000 COP</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pendiente</span></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><a href="#" class="text-green-600 hover:text-green-900">Edit</a></td>
+                    </tr>
+                     <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">15/05/2025</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">María<br><small class="text-gray-500">Vereda</small></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Seco</span></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">5 kg</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">80,000 COP/kg</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">400,000 COP</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completado</span></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><a href="#" class="text-green-600 hover:text-green-900">Edit</a></td>
+                                </tr>
+                                {# End example rows #}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="compras-empresas-section" class="tab-content bg-white shadow rounded-lg mb-8 hidden" data-tab-content="compras-empresas">
+                 <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Gestión de Compras de Empresas</h3>
+                    <p class="mt-1 text-sm text-gray-500">Administra las compras realizadas por las empresas a CafExport</p>
+                 </div>
+
+                <div class="p-6">
+                     {# Table Header/Controls for Compras #}
+                    <div class="flex justify-between items-center mb-4">
+                         <input type="text" placeholder="Buscar compra..." class="px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                         <select class="px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                            <option value="">Todos los estados</option>
+                            {# Dynamic options for states here #}
+                         </select>
+                    </div>
+
+                    <!-- Tabla de Compras (Placeholder) -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Orden</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Empresa</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo Café</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio Kg</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {# Example row - replace with dynamic data loop #}
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">18/05/2025</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Empresa Compradora S.A.</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Arabica</span></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">50 kg</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">88,000 COP/kg</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">4,400,000 COP</td>
+                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pendiente</span></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><a href="#" class="text-green-600 hover:text-green-900">Edit</a></td>
+                    </tr>
+                                {# End example rows #}
+                </tbody>
+            </table>
+        </div>
+    </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const tabs = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab;
+
+                tabContents.forEach(content => {
+                    if (content.dataset.tabContent === targetTab) {
+                        content.classList.remove('hidden');
+                    } else {
+                        content.classList.add('hidden');
+                    }
+                });
+
+                tabs.forEach(btn => {
+                    if (btn.dataset.tab === targetTab) {
+                        btn.dataset.state = 'active';
+                    } else {
+                        btn.dataset.state = '';
+                    }
+                });
+            });
+        });
+
+        // Activate the first tab by default
+        if (tabs.length > 0) {
+            tabs[0].click();
+        }
+
+    });
+</script>
+<script src="{{ url_for('static', filename='js/ventas_campesino.js') }}"></script>
+{% endblock %}
+{% endblock %} 

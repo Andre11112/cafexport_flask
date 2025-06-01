@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from ..models import db, Usuario
+from werkzeug.security import generate_password_hash
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -88,6 +89,8 @@ def login():
         usuario = Usuario.query.filter_by(cedula=data['identificador'], tipo='campesino').first()
     elif tipo_usuario == 'empresa':
         usuario = Usuario.query.filter_by(nit=data['identificador'], tipo='empresa').first()
+    elif tipo_usuario == 'admin':
+        usuario = Usuario.query.filter_by(email=data['identificador'], tipo='admin').first()
     else:
         return jsonify({'error': 'Tipo de usuario no válido'}), 400
     
@@ -129,3 +132,11 @@ def obtener_perfil():
         return jsonify({'error': 'Usuario no encontrado'}), 404
     
     return jsonify(usuario.to_dict()), 200
+
+@auth_bp.route('/generate-admin-hash/<password>')
+def generate_admin_hash(password):
+    # ** ELIMINA ESTA RUTA DESPUÉS DE GENERAR EL HASH **
+    # Esta ruta es solo para generar un hash de contraseña temporalmente.
+    hashed_password = generate_password_hash(password)
+    print(f"Generated hash for '{password}': {hashed_password}")
+    return jsonify({'password_hash': hashed_password, 'warning': 'REMOVE THIS ROUTE AFTER USE'})

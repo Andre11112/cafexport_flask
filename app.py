@@ -24,10 +24,11 @@ def create_app():
     # Registrar blueprints
     from frontend.routes.campesino_routes import campesino_bp
     from frontend.routes.empresa_routes import empresa_bp
+    from backend.routes.admin_routes import admin_bp
     
     app.register_blueprint(campesino_bp, url_prefix='/campesino')
     app.register_blueprint(empresa_bp, url_prefix='/empresa')
-    
+    app.register_blueprint(admin_bp, url_prefix='/admin')
     @app.route('/api/health')
     def health_check():
         return {'status': 'healthy'}, 200

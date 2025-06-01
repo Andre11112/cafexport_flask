@@ -25,8 +25,10 @@ def create_app():
         # Restaurar importaciones originales (asumiendo que eran relativas)
         from routes.campesino_routes import campesino_bp
         from routes.empresa_routes import empresa_bp
+        from routes.auth_routes import auth_bp
         app.register_blueprint(campesino_bp, url_prefix='/campesino')
         app.register_blueprint(empresa_bp, url_prefix='/empresa')
+        app.register_blueprint(auth_bp)
     except ImportError as e:
         app.logger.warning(f"No se pudieron registrar blueprints de frontend: {e}")
         # Considerar si esto debería ser un error fatal en lugar de una advertencia

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <!-- Assuming Font Awesome is linked in base.html or elsewhere -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            /* Adjusted background gradient to be lighter */
+            background: linear-gradient(to bottom right, #e8f5e9, #c8e6c9);
+        }
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #0a7d3f; /* Match the green color */
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            font-size: 1em;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .back-link i {
+             margin-right: 5px;
+             font-size: 1em; /* Match text size */
+        }
+        .login-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 350px;
+            /* Ensure box-sizing is border-box for predictable sizing */
+            box-sizing: border-box;
+        }
+        .header {
+            background-color: #0a7d3f; /* Match the sidebar green */
+            color: white;
+            padding: 30px 20px; /* Increased top/bottom padding */
+            margin: -40px -40px 20px -40px; /* Adjust margin to align with card */
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        .header h2 {
+            margin: 5px 0; /* Adjusted margin */
+            font-size: 1.8em; /* Adjusted font size */
+        }
+        .header p {
+            margin: 0;
+            font-size: 1em; /* Adjusted font size */
+            opacity: 0.9; /* Slightly less opaque */
+        }
+        .shield-icon {
+            font-size: 3.5em; /* Slightly larger icon */
+            margin-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px; /* Increased spacing */
+            text-align: left;
+        }
+        /* Removed label as input has placeholder */
+        .form-group input {
+            width: 100%;
+            padding: 12px; /* Increased padding */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1em; /* Ensure consistent font size */
+        }
+        button {
+            width: 100%;
+            padding: 12px; /* Increased padding */
+            background-color: #0a7d3f; /* Match the green color */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease; /* Smooth hover effect */
+        }
+        button:hover {
+            background-color: #086633; /* Darker green on hover */
+        }
+        .links {
+            margin-top: 25px; /* Increased spacing */
+            font-size: 0.9em;
+        }
+        .links a {
+            color: #0a7d3f; /* Match the green color */
+            text-decoration: none;
+            display: block;
+            margin-bottom: 8px; /* Increased spacing */
+        }
+        .links a:last-child {
+            margin-bottom: 0; /* No bottom margin for the last link */
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <a href="{{ url_for('auth.index') }}" class="back-link">
+         <i class="fas fa-arrow-left"></i> Volver al inicio
+    </a>
+    <div class="login-container">
+        <div class="header">
+            <div class="shield-icon"><i class="fas fa-shield-alt"></i></div> <!-- Font Awesome Shield icon -->
+            <h2>CafExport</h2>
+            <p>Panel de Administración</p>
+        </div>
+        <!-- Mensajes de error y éxito -->
+        <div id="mensaje-error" style="color: red; display: none; margin-bottom: 10px;"></div>
+        <div id="mensaje-exito" style="color: green; display: none; margin-bottom: 10px;"></div>
+
+        <form id="adminLoginForm" method="post" action="{{ url_for('auth.admin_login') }}">
+            <div class="form-group">
+                <input type="email" id="email" name="identificador" placeholder="Email" required>
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" name="password" placeholder="Contraseña" required>
+            </div>
+            <button type="submit">Iniciar Sesión</button>
+        </form>
+        <div class="links">
+            <a href="#">¿Olvidó su contraseña?</a>
+            <a href="#">Contacte al administrador del sistema</a>
+        </div>
+    </div>
+    <!-- <script src="{{ url_for('static', filename='js/login.js') }}"></script> -->
+</body>
+</html> 

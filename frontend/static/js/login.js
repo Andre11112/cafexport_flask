@@ -6,8 +6,9 @@ async function handleLogin(event, userType) {
     
     const form = event.target;
     let identificador;
-    let errorMessageDiv = form.closest('.bg-white').querySelector('#mensaje-error');
-    let successMessageDiv = form.closest('.bg-white').querySelector('#mensaje-exito');
+    // Obtener los elementos de mensaje directamente por ID
+    let errorMessageDiv = document.getElementById('mensaje-error');
+    let successMessageDiv = document.getElementById('mensaje-exito');
 
     // Limpiar mensajes anteriores
     errorMessageDiv.style.display = 'none';
@@ -19,6 +20,8 @@ async function handleLogin(event, userType) {
             identificador = form.querySelector('input[name="cedula"]').value;
         } else if (userType === 'empresa') {
             identificador = form.querySelector('input[name="nit"]').value;
+        } else if (userType === 'admin') {
+            identificador = form.querySelector('input[name="identificador"]').value;
         }
 
         const password = form.querySelector('input[name="password"]').value;
@@ -100,4 +103,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (empresaLoginForm) {
         empresaLoginForm.addEventListener('submit', (e) => handleLogin(e, 'empresa'));
     }
+
+    // Eliminar event listener para el formulario de administrador ya que la ruta del frontend lo maneja
+    // const adminLoginForm = document.getElementById('adminLoginForm');
+    // if (adminLoginForm) {
+    //     adminLoginForm.addEventListener('submit', (e) => handleLogin(e, 'admin'));
+    // }
 });
