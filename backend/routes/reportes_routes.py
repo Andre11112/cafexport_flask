@@ -1,8 +1,11 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from backend.models import db, CompraEmpresa, Usuario, Venta
 from sqlalchemy import func
 from datetime import datetime, timedelta
+import io
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 
 reportes_bp = Blueprint('reportes', __name__)
 
@@ -221,3 +224,207 @@ def get_reportes_campesino():
         print(f"Error detallado al obtener reportes del campesino: {e}")
         traceback.print_exc()
         return jsonify({'message': 'Error al obtener reportes', 'error': str(e)}), 500
+
+# Nueva ruta para exportar reportes de compras a PDF para empresas
+@reportes_bp.route('/empresa/exportar_reportes_pdf', methods=['GET', 'OPTIONS'])
+@jwt_required()
+def exportar_reportes_empresa_pdf():
+    # Manejar solicitudes OPTIONS para CORS preflight
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
+    current_user_id = get_jwt_identity()
+    empresa = Usuario.query.get(current_user_id)
+
+    if not empresa or empresa.tipo != 'empresa':
+        return jsonify({'msg': 'Acceso denegado'}), 403
+
+    periodo = request.args.get('periodo', 'Último mes')
+
+    # Calcular el rango de fechas basado en el período
+    fecha_fin = datetime.utcnow()
+    fecha_inicio = None
+
+    if periodo == 'Último mes':
+        # Calcular el inicio del mes actual o últimos 30 días para simplificar
+        fecha_inicio = fecha_fin - timedelta(days=30)
+    elif periodo == 'Últimos 3 meses':
+        fecha_inicio = fecha_fin - timedelta(days=90)
+    elif periodo == 'Último año':
+        fecha_inicio = fecha_fin - timedelta(days=365)
+    elif periodo == 'Todo el tiempo':
+        fecha_inicio = datetime.min # Desde el inicio de los tiempos (o un fecha muy antigua)
+    # Si el período no coincide con ninguno, podríamos devolver un error o usar un rango por defecto
+
+    if not fecha_inicio:
+         return jsonify({'error': 'Período no válido'}), 400
+
+    try:
+        # Obtener las compras de la empresa para el período, ordenadas por fecha
+        compras = CompraEmpresa.query.filter(
+            CompraEmpresa.empresa_id == empresa.id,
+            CompraEmpresa.fecha_orden >= fecha_inicio,
+            CompraEmpresa.fecha_orden <= fecha_fin
+        ).options(db.joinedload(CompraEmpresa.cafexport_vendedor)).order_by(CompraEmpresa.fecha_orden.asc()).all()
+
+        if not compras:
+            return jsonify({'message': 'No hay información disponible para generar el reporte en este período.'}), 404 # Código 404 Not Found es apropiado aquí
+
+        # Si hay compras, proceder a generar el PDF
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        elements = []
+
+        # Estilos
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
+        from reportlab.lib.units import inch
+        from reportlab.lib import colors
+
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='ReportTitle', fontSize=16, spaceAfter=14, alignment=1, bold=1))
+        styles.add(ParagraphStyle(name='InfoStyle', fontSize=10, spaceAfter=6))
+        styles.add(ParagraphStyle(name='SectionTitle', fontSize=14, spaceAfter=10, bold=1))
+
+        # Título del reporte
+        elements.append(Paragraph(f'Reporte de Compras - {periodo}', styles['ReportTitle']))
+        elements.append(Paragraph(f'Empresa: {empresa.nombre}', styles['InfoStyle']))
+        elements.append(Paragraph(f'Fecha de Generación: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}', styles['InfoStyle']))
+        elements.append(Spacer(1, 0.2*inch))
+
+        # Calcular estadísticas de resumen para el período
+        total_compras_periodo = sum(compra.total for compra in compras) if compras else 0
+        total_cantidad_periodo = sum(compra.cantidad for compra in compras) if compras else 0
+        precio_promedio_periodo = (total_compras_periodo / total_cantidad_periodo) if total_cantidad_periodo > 0 else 0
+
+        # Calcular estadísticas por tipo de café
+        compras_por_tipo = {}
+        for compra in compras:
+            tipo = compra.tipo_cafe.value if compra.tipo_cafe else 'N/A'
+            if tipo not in compras_por_tipo:
+                compras_por_tipo[tipo] = {
+                    'cantidad_total': 0,
+                    'valor_total': 0,
+                    'precio_promedio': 0
+                }
+            compras_por_tipo[tipo]['cantidad_total'] += compra.cantidad if compra.cantidad else 0
+            compras_por_tipo[tipo]['valor_total'] += compra.total if compra.total else 0
+
+        # Calcular precio promedio por tipo
+        for tipo in compras_por_tipo:
+            if compras_por_tipo[tipo]['cantidad_total'] > 0:
+                compras_por_tipo[tipo]['precio_promedio'] = (
+                    compras_por_tipo[tipo]['valor_total'] / 
+                    compras_por_tipo[tipo]['cantidad_total']
+                )
+
+        # Obtener evolución de precios por mes
+        precios_por_mes = db.session.query(
+            func.date_trunc('month', CompraEmpresa.fecha_orden).label('mes'),
+            CompraEmpresa.tipo_cafe,
+            func.avg(CompraEmpresa.precio_kg).label('precio_promedio')
+        ).filter(
+            CompraEmpresa.empresa_id == empresa.id,
+            CompraEmpresa.fecha_orden >= fecha_inicio,
+            CompraEmpresa.fecha_orden <= fecha_fin
+        ).group_by(
+            'mes',
+            CompraEmpresa.tipo_cafe
+        ).order_by('mes').all()
+
+        # Añadir estadísticas de resumen al PDF
+        elements.append(Paragraph('Resumen del Período:', styles['SectionTitle']))
+        elements.append(Paragraph(f'Total Compras: {total_compras_periodo:,.0f} COP', styles['InfoStyle']))
+        elements.append(Paragraph(f'Cantidad Total Comprada: {total_cantidad_periodo:.2f} kg', styles['InfoStyle']))
+        elements.append(Paragraph(f'Precio Promedio: {precio_promedio_periodo:,.0f} COP/kg', styles['InfoStyle']))
+        elements.append(Spacer(1, 0.2*inch))
+
+        # Añadir estadísticas por tipo de café
+        elements.append(Paragraph('Compras por Tipo de Café:', styles['SectionTitle']))
+        for tipo, stats in compras_por_tipo.items():
+            elements.append(Paragraph(f'Tipo: {tipo}', styles['InfoStyle']))
+            elements.append(Paragraph(f'  Cantidad Total: {stats["cantidad_total"]:.2f} kg', styles['InfoStyle']))
+            elements.append(Paragraph(f'  Valor Total: {stats["valor_total"]:,.0f} COP', styles['InfoStyle']))
+            elements.append(Paragraph(f'  Precio Promedio: {stats["precio_promedio"]:,.0f} COP/kg', styles['InfoStyle']))
+            elements.append(Spacer(1, 0.1*inch))
+
+        elements.append(Spacer(1, 0.2*inch))
+
+        # Añadir evolución de precios
+        elements.append(Paragraph('Evolución de Precios por Mes:', styles['SectionTitle']))
+        data_precios = [['Mes', 'Tipo Café', 'Precio Promedio (COP/kg)']]
+        for mes, tipo, precio in precios_por_mes:
+            data_precios.append([
+                mes.strftime('%Y-%m'),
+                tipo.value if tipo else 'N/A',
+                f'{precio:,.0f}' if precio else 'N/A'
+            ])
+
+        # Crear tabla de evolución de precios
+        table_precios = Table(data_precios)
+        style_precios = TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.Color(0.08, 0.44, 0.25, 1)),
+            ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,0), 10),
+            ('BOTTOMPADDING', (0,0), (-1,0), 12),
+            ('BACKGROUND', (0,1), (-1,-1), colors.Color(0.95, 0.95, 0.95, 1)),
+            ('GRID', (0,0), (-1,-1), 1, colors.black)
+        ])
+        table_precios.setStyle(style_precios)
+        elements.append(table_precios)
+        elements.append(Spacer(1, 0.2*inch))
+
+        # Detalles de las Compras (Tabla)
+        elements.append(Paragraph('Detalle de Compras:', styles['SectionTitle']))
+        data = [
+            ['Fecha Orden', 'Tipo Café', 'Cantidad (kg)', 'Precio/kg (COP)', 'Total (COP)', 'Estado', 'Vendedor']
+        ]
+        for compra in compras:
+            data.append([
+                compra.fecha_orden.strftime('%Y-%m-%d') if compra.fecha_orden else '',
+                compra.tipo_cafe.value if compra.tipo_cafe else '',
+                f'{compra.cantidad:.2f}' if compra.cantidad is not None else '',
+                f'{compra.precio_kg:,.0f}' if compra.precio_kg is not None else '',
+                f'{compra.total:,.0f}' if compra.total is not None else '',
+                compra.estado.value if compra.estado else '',
+                compra.cafexport_vendedor.nombre if compra.cafexport_vendedor else 'N/A'
+            ])
+
+        # Crear la tabla y aplicar estilos (usando estilos similares a los del reporte del campesino para consistencia)
+        table = Table(data)
+        style = TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.Color(0.08, 0.44, 0.25, 1)), # Verde oscuro
+            ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,0), 10),
+            ('BOTTOMPADDING', (0,0), (-1,0), 12),
+            ('BACKGROUND', (0,1), (-1,-1), colors.Color(0.95, 0.95, 0.95, 1)), # Gris muy claro para filas impares
+            ('BACKGROUND', (0,2), (-1,-1), colors.Color(0.85, 0.95, 0.85, 1)), # Verde claro para filas pares (alternado)
+            ('GRID', (0,0), (-1,-1), 1, colors.black)
+        ])
+        table.setStyle(style)
+        elements.append(table)
+
+        # Construir el PDF
+        doc.build(elements)
+
+        # Obtener el contenido del PDF y enviarlo
+        pdf_content = buffer.getvalue()
+        buffer.close()
+
+        from flask import make_response
+        response = make_response(pdf_content)
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'attachment; filename=reporte_compras_empresa_{periodo.replace(" ", "_").lower()}.pdf'
+        response.headers['Access-Control-Expose-Headers'] = 'Content-Disposition' # Exponer header
+
+        return response, 200
+
+    except Exception as e:
+        import traceback
+        print("ERROR IN exportar_reportes_empresa_pdf:")
+        traceback.print_exc()
+        return jsonify({'error': f'Error interno al generar el reporte PDF de empresa: {e}'}), 500

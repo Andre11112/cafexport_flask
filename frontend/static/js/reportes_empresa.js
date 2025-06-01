@@ -211,4 +211,70 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Cargar reportes al iniciar
     loadReportes();
+
+    const selectPeriodoReportes = document.querySelector('#periodoReporte');
+    const exportarReportesBtn = document.querySelector('#exportarReporteBtn');
+
+    console.log('Elementos encontrados:', { selectPeriodoReportes, exportarReportesBtn });
+
+    if (exportarReportesBtn && selectPeriodoReportes) {
+        exportarReportesBtn.addEventListener('click', async function() {
+            console.log('Botón de exportar clickeado');
+            const periodo = selectPeriodoReportes.value;
+            console.log('Período seleccionado:', periodo);
+            const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+
+            if (!token) {
+                console.error('No JWT token found for report export.');
+                alert('Por favor, inicie sesión para exportar reportes.');
+                return;
+            }
+
+            try {
+                console.log('Iniciando solicitud de exportación...');
+                const response = await fetch(`http://127.0.0.1:5000/empresa/exportar_reportes_pdf?periodo=${encodeURIComponent(periodo)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    }
+                });
+
+                console.log('Respuesta recibida:', response.status);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Error en la respuesta:', errorData);
+                    throw new Error(errorData.error || errorData.message || 'Error al generar el reporte PDF.');
+                }
+
+                const blob = await response.blob();
+                console.log('Blob recibido:', blob);
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                
+                // Intentar obtener el nombre del archivo del encabezado Content-Disposition
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = `reporte_compras_empresa_${periodo.replace(/\s+/g, '_').toLowerCase()}.pdf`;
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+                    if (filenameMatch && filenameMatch[1]) {
+                        filename = filenameMatch[1];
+                    }
+                }
+                
+                console.log('Descargando archivo:', filename);
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+            } catch (error) {
+                console.error('Error exporting report:', error);
+                alert(`Error al exportar el reporte: ${error.message}`);
+            }
+        });
+    } else {
+        console.error('No se encontraron los elementos necesarios para la exportación');
+    }
 });
