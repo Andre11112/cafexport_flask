@@ -30,8 +30,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.ok) {
                     // Login exitoso
-                    localStorage.setItem('token', data.token); // Guardar el token en localStorage
+                    localStorage.setItem('token', data.token); // Guardar el token en localStorage (legacy)
+                    localStorage.setItem('access_token', data.token); // Guardar el token bajo la clave usada por el dashboard
                     localStorage.setItem('user', JSON.stringify(data.usuario)); // Opcional: guardar datos del usuario
+                    
+                    // Mostrar en consola para depuración
+                    console.log('TOKEN JWT:', data.token);
+                    console.log('Usuario logueado:', data.usuario);
                     
                     mensajeExito.textContent = data.mensaje || 'Inicio de sesión exitoso';
                     mensajeExito.style.display = 'block';

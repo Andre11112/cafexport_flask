@@ -1,4 +1,43 @@
+// --- FUNCIONES GLOBALES PARA EL MODAL ---
+function abrirModalEstado(id, tipo, estadoActual) {
+    document.getElementById('modal-item-id').value = id;
+    document.getElementById('modal-item-tipo').value = tipo;
+    document.getElementById('modal-estado-actual').textContent = estadoActual;
+    // Actualizar opciones del select según el tipo
+    const select = document.getElementById('modal-nuevo-estado');
+    select.innerHTML = '';
+    let estados = [];
+    if (tipo === 'venta') {
+        estados = ['Pendiente', 'Completada'];
+    } else if (tipo === 'compra') {
+        estados = ['Pendiente', 'Confirmadas', 'Completada'];
+    }
+    estados.forEach(estado => {
+        const option = document.createElement('option');
+        option.value = estado;
+        option.textContent = estado;
+        if (estado === estadoActual) {
+            option.selected = true;
+        }
+        select.appendChild(option);
+    });
+    document.getElementById('modal-cambiar-estado').classList.remove('hidden');
+}
+
+function cerrarModalEstado() {
+    document.getElementById('modal-cambiar-estado').classList.add('hidden');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Función para obtener headers con token JWT
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('access_token');
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
+    };
+
     // Función para cargar las estadísticas del administrador
     async function loadAdminStats() {
         try {
@@ -163,18 +202,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Función para abrir el modal y cargar datos
-    function abrirModalEstado(id, tipo, estadoActual) {
-        document.getElementById('modal-item-id').value = id;
-        document.getElementById('modal-item-tipo').value = tipo;
-        document.getElementById('modal-estado-actual').textContent = estadoActual;
-        document.getElementById('modal-nuevo-estado').value = estadoActual;
-        document.getElementById('modal-cambiar-estado').classList.remove('hidden');
-    }
-    function cerrarModalEstado() {
-        document.getElementById('modal-cambiar-estado').classList.add('hidden');
-    }
-
     // Enviar el cambio de estado
     const form = document.getElementById('form-cambiar-estado');
     if(form) {
@@ -183,23 +210,37 @@ document.addEventListener('DOMContentLoaded', () => {
             const id = document.getElementById('modal-item-id').value;
             const tipo = document.getElementById('modal-item-tipo').value;
             const nuevoEstado = document.getElementById('modal-nuevo-estado').value;
-            let url = '';
-            if(tipo === 'venta') {
-                url = `/admin/ventas/${id}/estado`;
-            } else {
-                url = `/admin/compras/${id}/estado`;
-            }
-            const resp = await fetch(url, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ estado: nuevoEstado })
-            });
-            if(resp.ok) {
+            
+            try {
+                const url = tipo === 'venta' 
+                    ? `http://127.0.0.1:5000/api/admin/ventas/${id}/estado`
+                    : `http://127.0.0.1:5000/api/admin/compras/${id}/estado`;
+                
+                const resp = await fetch(url, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ estado: nuevoEstado })
+                });
+                
+                if (!resp.ok) {
+                    const error = await resp.json();
+                    throw new Error(error.error || 'Error al actualizar el estado');
+                }
+                
+                const data = await resp.json();
+                alert(data.mensaje || 'Estado actualizado correctamente');
                 cerrarModalEstado();
-                if(typeof loadVentasTable === 'function') loadVentasTable();
-                if(typeof loadComprasTable === 'function') loadComprasTable();
-            } else {
-                alert('Error al actualizar el estado');
+                
+                // Recargar las tablas
+                if (tipo === 'venta') {
+                    loadVentasTable();
+                } else {
+                    loadComprasTable();
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message || 'Error al actualizar el estado');
             }
         }
     }

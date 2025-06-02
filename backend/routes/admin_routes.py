@@ -1,6 +1,6 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
-from ..models import Usuario, Venta, CompraEmpresa, db # Import Venta, CompraEmpresa and db
+from ..models import Usuario, Venta, CompraEmpresa, db, EstadoVentaEnum, EstadoCompraEnum # Importar Enums
 from flask_login import login_required, current_user # Assuming Flask-Login is used for admin session
 from sqlalchemy import func # Import func for sum
 
@@ -82,6 +82,62 @@ def get_all_compras_empresa():
     except Exception as e:
         print(f"Error fetching all compras empresa: {e}")
         return jsonify({'error': 'Error al obtener compras de empresa'}), 500
+
+# Ruta para actualizar el estado de una venta
+@admin_bp.route('/api/admin/ventas/<int:venta_id>/estado', methods=['PUT'])
+# @login_required # Consider adding authentication/authorization
+# @admin_required
+def update_venta_estado(venta_id):
+    try:
+        data = request.get_json()
+        nuevo_estado_str = data.get('estado') # Obtener el estado como string
+
+        venta = Venta.query.get(venta_id)
+        if not venta:
+            return jsonify({'error': 'Venta no encontrada'}), 404
+
+        # Convertir el string de estado a miembro del Enum
+        try:
+            nuevo_estado_enum = EstadoVentaEnum(nuevo_estado_str)
+        except ValueError:
+            return jsonify({'error': 'Estado de venta no válido'}), 400
+
+        venta.estado = nuevo_estado_enum
+        db.session.commit()
+        return jsonify({'mensaje': 'Estado de venta actualizado correctamente'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error updating venta state: {e}")
+        return jsonify({'error': 'Error al actualizar el estado de la venta'}), 500
+
+# Ruta para actualizar el estado de una compra
+@admin_bp.route('/api/admin/compras/<int:compra_id>/estado', methods=['PUT'])
+# @login_required # Consider adding authentication/authorization
+# @admin_required
+def update_compra_estado(compra_id):
+    try:
+        data = request.get_json()
+        nuevo_estado_str = data.get('estado') # Obtener el estado como string
+
+        compra = CompraEmpresa.query.get(compra_id)
+        if not compra:
+            return jsonify({'error': 'Compra no encontrada'}), 404
+
+        # Convertir el string de estado a miembro del Enum
+        try:
+            nuevo_estado_enum = EstadoCompraEnum(nuevo_estado_str)
+        except ValueError:
+            return jsonify({'error': 'Estado de compra no válido'}), 400
+
+        compra.estado = nuevo_estado_enum
+        db.session.commit()
+        return jsonify({'mensaje': 'Estado de compra actualizado correctamente'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error updating compra state: {e}")
+        return jsonify({'error': 'Error al actualizar el estado de la compra'}), 500
 
 # Puedes añadir más rutas aquí para obtener listas de usuarios, ventas, compras, etc.
 # @admin_bp.route('/api/admin/users/<user_type>', methods=['GET'])

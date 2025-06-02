@@ -171,3 +171,28 @@ class PrecioCafe(db.Model):
             'referencia_externa': self.referencia_externa,
             'metadata_json': self.metadata_json
         } 
+
+class AuditoriaCambioEstado(db.Model):
+    __tablename__ = 'auditoria_cambio_estado'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    tipo_objeto = db.Column(db.String(20))  # 'venta' o 'compra'
+    objeto_id = db.Column(db.Integer)
+    estado_anterior = db.Column(db.String(20))
+    estado_nuevo = db.Column(db.String(20))
+    fecha_cambio = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relación con Usuario
+    usuario = db.relationship('Usuario', backref='cambios_estado')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'usuario_id': self.usuario_id,
+            'tipo_objeto': self.tipo_objeto,
+            'objeto_id': self.objeto_id,
+            'estado_anterior': self.estado_anterior,
+            'estado_nuevo': self.estado_nuevo,
+            'fecha_cambio': self.fecha_cambio.isoformat() if self.fecha_cambio else None
+        } 
