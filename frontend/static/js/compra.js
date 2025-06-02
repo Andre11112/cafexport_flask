@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Elementos de las tarjetas de estadísticas
     const totalComprasCard = document.getElementById('total-compras-card');
     const completadasCard = document.getElementById('completadas-card');
-    const enTransitoCard = document.getElementById('en-transito-card');
+    const pendientesCard = document.getElementById('en-transito-card');
     const confirmadasCard = document.getElementById('confirmadas-card');
     const totalInversionCard = document.getElementById('total-inversion-card');
     const promedioCard = document.getElementById('promedio-card');
@@ -85,10 +85,10 @@ document.addEventListener('DOMContentLoaded', function() {
                      else if(totalComprasCard) totalComprasCard.innerHTML += `<p class="text-sm text-gray-600">Cantidad: ${stats.total_compras_cantidad !== undefined ? stats.total_compras_cantidad + ' kg' : '--'}</p>`;
                  }
                 if(completadasCard) completadasCard.querySelector('p').textContent = stats.completadas_count !== undefined ? stats.completadas_count : '--';
-                if(enTransitoCard) enTransitoCard.querySelector('p').textContent = stats.en_transito_count !== undefined ? stats.en_transito_count : '--';
+                if(pendientesCard) pendientesCard.querySelector('p').textContent = stats.pendientes_count !== undefined ? stats.pendientes_count : '--';
                 if(confirmadasCard) confirmadasCard.querySelector('p').textContent = stats.confirmadas_count !== undefined ? stats.confirmadas_count : '--';
-                if(totalInversionCard) totalInversionCard.querySelector('p').textContent = stats.total_inversion !== undefined ? formatCOP(stats.total_inversion) + ' COP' : '-- COP';
-                if(promedioCard) promedioCard.querySelector('p').textContent = stats.precio_promedio !== undefined ? formatCOP(stats.precio_promedio) + ' COP/kg' : '-- COP/kg';
+                if(totalInversionCard) totalInversionCard.querySelector('p').textContent = stats.total_inversion !== undefined ? formatCOP(parseFloat(stats.total_inversion)) + ' COP' : '-- COP';
+                if(promedioCard) promedioCard.querySelector('p').textContent = stats.precio_promedio !== undefined ? formatCOP(parseFloat(stats.precio_promedio)) + ' COP/kg' : '-- COP/kg';
 
             } else {
                  console.error('Error al cargar estadísticas: No se recibieron datos válidos.', data);
@@ -240,6 +240,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 return 'bg-red-100 text-red-800';
             case 'Cancelada':
                 return 'bg-gray-100 text-gray-800';
+            case 'Confirmadas':
+                 return 'bg-purple-100 text-purple-800';
             default:
                 return 'bg-gray-100 text-gray-800';
         }

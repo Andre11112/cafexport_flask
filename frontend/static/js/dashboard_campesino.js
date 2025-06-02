@@ -223,7 +223,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Obtener estado
             const estado = venta.estado || 'Pendiente';
-            const estadoClass = estado === 'Completada' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'; // Ejemplo básico de color por estado
+
+            // Determinar la clase CSS según el estado
+            let estadoClass = '';
+            switch(estado) {
+                case 'Completada':
+                    estadoClass = 'bg-green-100 text-green-800';
+                    break;
+                case 'Pendiente':
+                    estadoClass = 'bg-yellow-100 text-yellow-800';
+                    break;
+                default:
+                    estadoClass = 'bg-gray-100 text-gray-800'; // Color por defecto para otros estados
+            }
+
+            // Determinar la clase CSS según el tipo de café
+            let tipoCafeClass = '';
+            switch(tipoCafe) {
+                case 'Pasilla':
+                    tipoCafeClass = 'bg-yellow-100 text-yellow-800';
+                    break;
+                case 'Arabica':
+                    tipoCafeClass = 'bg-green-100 text-green-800';
+                    break;
+                default:
+                    tipoCafeClass = 'bg-gray-100 text-gray-800'; // Color por defecto
+            }
 
             const row = `
                 <tr>
@@ -234,7 +259,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         ${venta.comprador || 'CafExport'}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                        <span class="px-2 py-1 ${tipoCafeClass} rounded-full text-sm">
                             ${tipoCafe}
                         </span>
                     </td>

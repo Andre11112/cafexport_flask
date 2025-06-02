@@ -199,6 +199,22 @@ document.addEventListener('DOMContentLoaded', function() {
             const precioFormateado = venta.precio_kg ? `${parseFloat(venta.precio_kg).toLocaleString('es-CO')} COP/kg` : 'N/A';
             const totalFormateado = venta.total ? `${parseFloat(venta.total).toLocaleString('es-CO')} COP` : 'N/A';
 
+            const estadoFormateado = venta.estado || 'Pendiente';
+            let estadoClass = '';
+
+            // Determinar la clase CSS según el estado
+            switch(estadoFormateado) {
+                case 'Completada':
+                    estadoClass = 'bg-green-100 text-green-800';
+                    break;
+                case 'Pendiente':
+                    estadoClass = 'bg-yellow-100 text-yellow-800';
+                    break;
+                // Puedes añadir más casos si hay otros estados relevantes aquí
+                default:
+                    estadoClass = 'bg-gray-100 text-gray-800'; // Color por defecto
+            }
+
             const row = `
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -208,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         ${venta.comprador || 'CafExport'}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                        <span class="px-2 py-1 ${getTipoCafeClass(venta.tipo_cafe)} rounded-full text-sm">
                             ${venta.tipo_cafe || 'N/A'}
                         </span>
                     </td>
@@ -222,8 +238,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         ${totalFormateado}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                            ${venta.estado || 'Pendiente'}
+                        <span class="px-2 py-1 ${estadoClass} rounded-full text-sm">
+                            ${estadoFormateado}
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -384,7 +400,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.stats) {
                 if (totalVentasValueElement && data.stats.total_ventas !== undefined) {
                     // Mostrar el número total de ventas (conteo)
-                    totalVentasValueElement.innerText = `${data.stats.total_ventas.toLocaleString('es-CO')} COP`;
+                    totalVentasValueElement.innerText = data.stats.total_ventas;
                 }
 
                 if (completadasValueElement && data.stats.completadas !== undefined) {
@@ -623,5 +639,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+    }
+
+    // Función auxiliar para determinar la clase CSS según el tipo de café
+    function getTipoCafeClass(tipoCafe) {
+        switch(tipoCafe) {
+            case 'Pasilla':
+                return 'bg-yellow-100 text-yellow-800';
+            case 'Arabica':
+                return 'bg-green-100 text-green-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
     }
 }); 

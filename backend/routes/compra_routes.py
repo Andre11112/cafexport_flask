@@ -76,6 +76,17 @@ def get_estadisticas_compras():
         total_compras_count = db.session.query(func.count(CompraEmpresa.id))\
             .filter_by(empresa_id=current_user_id).scalar() or 0
 
+        # Calcular conteos por estado
+        completadas_count = db.session.query(func.count(CompraEmpresa.id))\
+            .filter_by(empresa_id=current_user_id, estado=EstadoCompraEnum.Completada).scalar() or 0
+        pendientes_count = db.session.query(func.count(CompraEmpresa.id))\
+            .filter_by(empresa_id=current_user_id, estado=EstadoCompraEnum.Pendiente).scalar() or 0
+        confirmadas_count = db.session.query(func.count(CompraEmpresa.id))\
+            .filter_by(empresa_id=current_user_id, estado=EstadoCompraEnum.Confirmadas).scalar() or 0
+
+        # Calcular precio promedio por kg
+        precio_promedio = (float(total_inversion) / float(total_compras_cantidad)) if float(total_compras_cantidad) > 0 else 0.0
+
         # Obtener la próxima entrega (suponiendo que es la fecha de entrega más cercana)
         proxima_entrega = db.session.query(func.min(CompraEmpresa.fecha_entrega))\
             .filter(CompraEmpresa.empresa_id == current_user_id, CompraEmpresa.fecha_entrega != None).scalar()
@@ -92,6 +103,10 @@ def get_estadisticas_compras():
             'total_compras_cantidad': float(total_compras_cantidad),
             'total_inversion': float(total_inversion),
             'total_compras_count': total_compras_count,
+            'completadas_count': completadas_count,
+            'pendientes_count': pendientes_count,
+            'confirmadas_count': confirmadas_count,
+            'precio_promedio': precio_promedio,
             'proxima_entrega': {
                 'fecha': proxima_entrega_str,
                 'dias': dias_restantes
