@@ -129,27 +129,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para obtener y mostrar el historial de ventas del campesino
     function fetchVentasCampesino() {
-        const jwtToken = localStorage.getItem('access_token'); // Obtener el token JWT
-
-        console.log('JWT Token fetched for ventas:', jwtToken); // Línea de depuración
+        const jwtToken = localStorage.getItem('access_token');
 
         if (!jwtToken) {
             console.error('No JWT token found. User not authenticated?');
-            // NOTA IMPORTANTE: Si ves este error al cargar la página después de iniciar sesión,
-            // el problema está en el script JavaScript que maneja el inicio de sesión.
-            // Debes asegurar que tras un login exitoso a /api/auth/login,
-            // el token JWT recibido del backend se guarde en localStorage con la clave 'access_token'.
-            // Ejemplo: localStorage.setItem('access_token', data.token);
-            // Redirigir a la página de login del campesino si no hay token
             alert('Tu sesión ha expirado o no has iniciado sesión. Por favor, inicia sesión de nuevo.');
-            window.location.href = '/campesino/login'; // Ajusta esta URL si es diferente
+            window.location.href = '/campesino/login';
             return;
         }
 
-        fetch('http://127.0.0.1:5000/api/ventas', { // Usar la ruta de ventas del blueprint ventas_bp
+        fetch('http://127.0.0.1:5000/api/ventas', {
             method: 'GET',
             headers: {
-                'Authorization': 'Bearer ' + jwtToken // Incluir el token JWT
+                'Authorization': 'Bearer ' + jwtToken
             }
         })
         .then(response => {
@@ -158,17 +150,32 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             return response.json();
         })
-        .then(ventas => {
-            console.log('Historial de ventas recibido:', ventas);
+        .then(data => {
+            console.log('Datos recibidos:', data);
             
-            // Calcular y actualizar las estadísticas basadas en los datos de ventas recibidos
-            calculateAndDisplayStats(ventas);
+            // Actualizar las estadísticas con los datos del backend
+            const stats = data.estadisticas;
+            const totalVentasValueElement = document.getElementById('total-ventas-value');
+            const completadasValueElement = document.getElementById('completadas-value');
+            const pendientesValueElement = document.getElementById('pendientes-value');
+            const totalIngresosValueElement = document.getElementById('total-ingresos-value');
+            const promedioValueElement = document.getElementById('promedio-value');
 
-            populateVentasTable(ventas); // Llenar la tabla con los datos
+            if (totalVentasValueElement) totalVentasValueElement.innerText = stats.total_ventas;
+            if (completadasValueElement) completadasValueElement.innerText = stats.completadas;
+            if (pendientesValueElement) pendientesValueElement.innerText = stats.pendientes;
+            if (totalIngresosValueElement) {
+                totalIngresosValueElement.innerText = `${stats.total_ingresos.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} COP`;
+            }
+            if (promedioValueElement) {
+                promedioValueElement.innerText = `${stats.promedio.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} COP`;
+            }
+
+            // Poblar la tabla con las ventas
+            populateVentasTable(data.ventas);
         })
         .catch(error => {
             console.error('Error fetching sales history:', error);
-            // Mostrar mensaje de error en la tabla o en la consola
             const tbody = document.querySelector('#ventasTable tbody');
             if (tbody) {
                 tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-4 text-center text-red-500">Error al cargar ventas: ${error.message}</td></tr>`;
@@ -516,63 +523,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Si estás en la página del dashboard, llama a updateDashboardDisplay al cargar
     // (Puedes añadir una comprobación de URL o un flag en la plantilla)
      updateDashboardDisplay(); // Llamar a la función sin la restricción de URL
-
-    // ** Nueva función para actualizar las estadísticas de ventas **
-    // Esta función ahora calculará las estadísticas a partir de la lista de ventas
-    function calculateAndDisplayStats(ventas) { 
-        let totalVentasCount = 0;
-        let completadasCount = 0;
-        let pendientesCount = 0;
-        let totalIngresosSum = 0.0;
-
-        ventas.forEach(venta => {
-            totalVentasCount++;
-            if (venta.estado === 'Completada') { // Usar el valor exacto del enum de la BD
-                completadasCount++;
-            } else if (venta.estado === 'Pendiente') { // Usar el valor exacto del enum de la BD
-                pendientesCount++;
-            }
-            // Asegurarse de que venta.total sea un número antes de sumarlo
-            if (venta.total !== null && venta.total !== undefined) {
-                 // Convertir el total a un número, manejando posibles strings si es necesario
-                 const totalVenta = parseFloat(venta.total);
-                 if (!isNaN(totalVenta)) {
-                     totalIngresosSum += totalVenta;
-                 }
-            }
-        });
-
-        const promedioIngresos = totalVentasCount > 0 ? totalIngresosSum / totalVentasCount : 0.0;
-
-        // Actualizar las tarjetas de estadísticas
-        const totalVentasValueElement = document.getElementById('total-ventas-value');
-        const completadasValueElement = document.getElementById('completadas-value');
-        const pendientesValueElement = document.getElementById('pendientes-value');
-        const totalIngresosValueElement = document.getElementById('total-ingresos-value');
-        const promedioValueElement = document.getElementById('promedio-value');
-
-        if (totalVentasValueElement) {
-            totalVentasValueElement.innerText = totalVentasCount;
-        }
-
-        if (completadasValueElement) {
-            completadasValueElement.innerText = completadasCount;
-        }
-
-        if (pendientesValueElement) {
-            pendientesValueElement.innerText = pendientesCount;
-        }
-
-        if (totalIngresosValueElement) {
-            // Formatear a COP con separadores de miles y dos decimales
-            totalIngresosValueElement.innerText = `${totalIngresosSum.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} COP`;
-        }
-
-        if (promedioValueElement) {
-            // Formatear a COP con separadores de miles y dos decimales
-            promedioValueElement.innerText = `${promedioIngresos.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} COP`;
-        }
-    }
 
     // Función para descargar la factura
     async function downloadFactura(ventaId) {

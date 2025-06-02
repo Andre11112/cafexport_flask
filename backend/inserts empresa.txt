@@ -1,0 +1,101 @@
+-- Insertar empresas transportadoras
+INSERT INTO usuario (id, tipo, nombre, nit, email, password_hash, direccion_empresa) VALUES
+(14, 'empresa', 'Transportes Rápidos SAS', '900123456-7', 'contacto@transportesrapidos.com', 'scrypt:32768:8:1$qGtvdqIvZ7cTr3zU$515f72d24934fda57256df9656e46d145cd63d2a26bfdf16745657bb395cd05a8468ba95c43fdfe01bf60f9fb0188b1d867e8c00c71eb8cd22e41df20aa4c4c9', 'Calle 45 #23-15, Bogotá'),
+(15, 'empresa', 'Logística Express Ltda', '900234567-8', 'info@logisticaexpress.com', 'scrypt:32768:8:1$qGtvdqIvZ7cTr3zU$515f72d24934fda57256df9656e46d145cd63d2a26bfdf16745657bb395cd05a8468ba95c43fdfe01bf60f9fb0188b1d867e8c00c71eb8cd22e41df20aa4c4c9', 'Carrera 78 #56-34, Medellín'),
+(16, 'empresa', 'Carga Segura SAS', '900345678-9', 'ventas@cargasegura.com', 'scrypt:32768:8:1$qGtvdqIvZ7cTr3zU$515f72d24934fda57256df9656e46d145cd63d2a26bfdf16745657bb395cd05a8468ba95c43fdfe01bf60f9fb0188b1d867e8c00c71eb8cd22e41df20aa4c4c9', 'Avenida 5 #67-89, Cali'),
+(17, 'empresa', 'Fletes Nacionales Ltda', '900456789-0', 'contacto@fletesnacionales.com', 'scrypt:32768:8:1$qGtvdqIvZ7cTr3zU$515f72d24934fda57256df9656e46d145cd63d2a26bfdf16745657bb395cd05a8468ba95c43fdfe01bf60f9fb0188b1d867e8c00c71eb8cd22e41df20aa4c4c9', 'Calle 12 #34-56, Barranquilla'),
+(18, 'empresa', 'Envíos Express SAS', '900567890-1', 'info@enviosexpress.com', 'scrypt:32768:8:1$qGtvdqIvZ7cTr3zU$515f72d24934fda57256df9656e46d145cd63d2a26bfdf16745657bb395cd05a8468ba95c43fdfe01bf60f9fb0188b1d867e8c00c71eb8cd22e41df20aa4c4c9', 'Carrera 23 #45-67, Bucaramanga'),
+(19, 'empresa', 'Mensajería Rápida Ltda', '900678901-2', 'ventas@mensajeriarapida.com', 'scrypt:32768:8:1$qGtvdqIvZ7cTr3zU$515f72d24934fda57256df9656e46d145cd63d2a26bfdf16745657bb395cd05a8468ba95c43fdfe01bf60f9fb0188b1d867e8c00c71eb8cd22e41df20aa4c4c9', 'Avenida 7 #89-01, Pereira'),
+(20, 'empresa', 'Delivery Nacional SAS', '900789012-3', 'contacto@deliverynacional.com', 'scrypt:32768:8:1$qGtvdqIvZ7cTr3zU$515f72d24934fda57256df9656e46d145cd63d2a26bfdf16745657bb395cd05a8468ba95c43fdfe01bf60f9fb0188b1d867e8c00c71eb8cd22e41df20aa4c4c9', 'Calle 89 #12-34, Cartagena');
+
+-- Insertar compras para cada empresa (distribuidas entre 2020-2025)
+-- Transportes Rápidos SAS (ID: 14)
+INSERT INTO compras_empresa (empresa_id, cafexport_vendedor_id, tipo_cafe, cantidad, precio_kg, fecha_orden, estado) VALUES
+(14, 1, 'Arabica', 500.00, 8500.00, '2020-03-15 10:00:00', 'Completada'),
+(14, 1, 'Pasilla', 300.00, 3000.00, '2020-06-20 14:30:00', 'Completada'),
+(14, 1, 'Arabica', 450.00, 8700.00, '2021-02-10 09:15:00', 'Completada'),
+(14, 1, 'Pasilla', 250.00, 3200.00, '2021-05-25 11:45:00', 'Completada'),
+(14, 1, 'Arabica', 600.00, 8900.00, '2022-01-05 08:30:00', 'Completada'),
+(14, 1, 'Pasilla', 350.00, 3300.00, '2022-04-18 15:20:00', 'Completada'),
+(14, 1, 'Arabica', 550.00, 9100.00, '2023-03-22 10:45:00', 'Completada'),
+(14, 1, 'Pasilla', 400.00, 3400.00, '2023-07-15 13:30:00', 'Completada'),
+(14, 1, 'Arabica', 650.00, 9300.00, '2024-02-28 09:00:00', 'Confirmadas'),
+(14, 1, 'Pasilla', 450.00, 3500.00, '2024-06-10 14:15:00', 'Pendiente');
+
+-- Logística Express Ltda (ID: 15)
+INSERT INTO compras_empresa (empresa_id, cafexport_vendedor_id, tipo_cafe, cantidad, precio_kg, fecha_orden, estado) VALUES
+(15, 1, 'Arabica', 600.00, 8600.00, '2020-04-20 11:30:00', 'Completada'),
+(15, 1, 'Pasilla', 400.00, 3100.00, '2020-08-15 15:45:00', 'Completada'),
+(15, 1, 'Arabica', 550.00, 8800.00, '2021-03-25 10:15:00', 'Completada'),
+(15, 1, 'Pasilla', 350.00, 3300.00, '2021-07-10 14:30:00', 'Completada'),
+(15, 1, 'Arabica', 700.00, 9000.00, '2022-02-15 09:45:00', 'Completada'),
+(15, 1, 'Pasilla', 450.00, 3400.00, '2022-06-20 13:15:00', 'Completada'),
+(15, 1, 'Arabica', 650.00, 9200.00, '2023-04-05 11:00:00', 'Completada'),
+(15, 1, 'Pasilla', 500.00, 3500.00, '2023-08-25 15:30:00', 'Completada'),
+(15, 1, 'Arabica', 750.00, 9400.00, '2024-03-15 10:30:00', 'Confirmadas'),
+(15, 1, 'Pasilla', 550.00, 3600.00, '2024-07-20 14:45:00', 'Pendiente');
+
+-- Carga Segura SAS (ID: 16)
+INSERT INTO compras_empresa (empresa_id, cafexport_vendedor_id, tipo_cafe, cantidad, precio_kg, fecha_orden, estado) VALUES
+(16, 1, 'Arabica', 450.00, 8500.00, '2020-05-10 09:45:00', 'Completada'),
+(16, 1, 'Pasilla', 300.00, 3000.00, '2020-09-25 14:15:00', 'Completada'),
+(16, 1, 'Arabica', 500.00, 8700.00, '2021-04-15 10:30:00', 'Completada'),
+(16, 1, 'Pasilla', 350.00, 3200.00, '2021-08-20 15:00:00', 'Completada'),
+(16, 1, 'Arabica', 550.00, 8900.00, '2022-03-20 11:15:00', 'Completada'),
+(16, 1, 'Pasilla', 400.00, 3300.00, '2022-07-25 14:45:00', 'Completada'),
+(16, 1, 'Arabica', 600.00, 9100.00, '2023-05-15 10:00:00', 'Completada'),
+(16, 1, 'Pasilla', 450.00, 3400.00, '2023-09-20 15:30:00', 'Completada'),
+(16, 1, 'Arabica', 650.00, 9300.00, '2024-04-25 11:45:00', 'Confirmadas'),
+(16, 1, 'Pasilla', 500.00, 3500.00, '2024-08-30 14:00:00', 'Pendiente');
+
+-- Fletes Nacionales Ltda (ID: 17)
+INSERT INTO compras_empresa (empresa_id, cafexport_vendedor_id, tipo_cafe, cantidad, precio_kg, fecha_orden, estado) VALUES
+(17, 1, 'Arabica', 500.00, 8600.00, '2020-06-15 10:15:00', 'Completada'),
+(17, 1, 'Pasilla', 350.00, 3100.00, '2020-10-30 15:45:00', 'Completada'),
+(17, 1, 'Arabica', 550.00, 8800.00, '2021-05-20 11:30:00', 'Completada'),
+(17, 1, 'Pasilla', 400.00, 3300.00, '2021-09-25 14:00:00', 'Completada'),
+(17, 1, 'Arabica', 600.00, 9000.00, '2022-04-25 10:45:00', 'Completada'),
+(17, 1, 'Pasilla', 450.00, 3400.00, '2022-08-30 15:15:00', 'Completada'),
+(17, 1, 'Arabica', 650.00, 9200.00, '2023-06-20 11:00:00', 'Completada'),
+(17, 1, 'Pasilla', 500.00, 3500.00, '2023-10-25 14:30:00', 'Completada'),
+(17, 1, 'Arabica', 700.00, 9400.00, '2024-05-30 10:15:00', 'Confirmadas'),
+(17, 1, 'Pasilla', 550.00, 3600.00, '2024-09-30 15:45:00', 'Pendiente');
+
+-- Envíos Express SAS (ID: 18)
+INSERT INTO compras_empresa (empresa_id, cafexport_vendedor_id, tipo_cafe, cantidad, precio_kg, fecha_orden, estado) VALUES
+(18, 1, 'Arabica', 550.00, 8500.00, '2020-07-20 11:45:00', 'Completada'),
+(18, 1, 'Pasilla', 400.00, 3000.00, '2020-11-25 14:15:00', 'Completada'),
+(18, 1, 'Arabica', 600.00, 8700.00, '2021-06-25 10:30:00', 'Completada'),
+(18, 1, 'Pasilla', 450.00, 3200.00, '2021-10-30 15:00:00', 'Completada'),
+(18, 1, 'Arabica', 650.00, 8900.00, '2022-05-30 11:15:00', 'Completada'),
+(18, 1, 'Pasilla', 500.00, 3300.00, '2022-09-30 14:45:00', 'Completada'),
+(18, 1, 'Arabica', 700.00, 9100.00, '2023-07-25 10:00:00', 'Completada'),
+(18, 1, 'Pasilla', 550.00, 3400.00, '2023-11-30 15:30:00', 'Completada'),
+(18, 1, 'Arabica', 750.00, 9300.00, '2024-06-30 11:45:00', 'Confirmadas'),
+(18, 1, 'Pasilla', 600.00, 3500.00, '2024-12-15 14:00:00', 'Pendiente');
+
+-- Mensajería Rápida Ltda (ID: 19)
+INSERT INTO compras_empresa (empresa_id, cafexport_vendedor_id, tipo_cafe, cantidad, precio_kg, fecha_orden, estado) VALUES
+(19, 1, 'Arabica', 600.00, 8600.00, '2020-08-25 10:15:00', 'Completada'),
+(19, 1, 'Pasilla', 450.00, 3100.00, '2020-12-30 15:45:00', 'Completada'),
+(19, 1, 'Arabica', 650.00, 8800.00, '2021-07-30 11:30:00', 'Completada'),
+(19, 1, 'Pasilla', 500.00, 3300.00, '2021-11-30 14:00:00', 'Completada'),
+(19, 1, 'Arabica', 700.00, 9000.00, '2022-06-30 10:45:00', 'Completada'),
+(19, 1, 'Pasilla', 550.00, 3400.00, '2022-12-15 15:15:00', 'Completada'),
+(19, 1, 'Arabica', 750.00, 9200.00, '2023-08-30 11:00:00', 'Completada'),
+(19, 1, 'Pasilla', 600.00, 3500.00, '2023-12-20 14:30:00', 'Completada'),
+(19, 1, 'Arabica', 800.00, 9400.00, '2024-07-30 10:15:00', 'Confirmadas'),
+(19, 1, 'Pasilla', 650.00, 3600.00, '2024-12-25 15:45:00', 'Pendiente');
+
+-- Delivery Nacional SAS (ID: 20)
+INSERT INTO compras_empresa (empresa_id, cafexport_vendedor_id, tipo_cafe, cantidad, precio_kg, fecha_orden, estado) VALUES
+(20, 1, 'Arabica', 650.00, 8500.00, '2020-09-30 11:45:00', 'Completada'),
+(20, 1, 'Pasilla', 500.00, 3000.00, '2021-01-15 14:15:00', 'Completada'),
+(20, 1, 'Arabica', 700.00, 8700.00, '2021-08-30 10:30:00', 'Completada'),
+(20, 1, 'Pasilla', 550.00, 3200.00, '2021-12-20 15:00:00', 'Completada'),
+(20, 1, 'Arabica', 750.00, 8900.00, '2022-07-30 11:15:00', 'Completada'),
+(20, 1, 'Pasilla', 600.00, 3300.00, '2022-12-25 14:45:00', 'Completada'),
+(20, 1, 'Arabica', 800.00, 9100.00, '2023-09-30 10:00:00', 'Completada'),
+(20, 1, 'Pasilla', 650.00, 3400.00, '2023-12-30 15:30:00', 'Completada'),
+(20, 1, 'Arabica', 850.00, 9300.00, '2024-08-30 11:45:00', 'Confirmadas'),
+(20, 1, 'Pasilla', 700.00, 3500.00, '2024-12-31 14:00:00', 'Pendiente');

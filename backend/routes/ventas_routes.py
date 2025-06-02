@@ -90,19 +90,48 @@ def obtener_ventas():
 
         # Preparar los datos para la respuesta JSON
         ventas_data = []
+        total_ventas = 0
+        completadas = 0
+        pendientes = 0
+        total_ingresos = 0.0
+
         for venta in ventas:
             ventas_data.append({
                 'id': venta.id,
-                'fecha': venta.fecha.strftime('%Y-%m-%d %H:%M:%S') if venta.fecha else None, # Formatear fecha si existe
-                'tipo_cafe': venta.tipo_cafe.value if venta.tipo_cafe else None, # Asumiendo que tipo_cafe es un Enum
+                'fecha': venta.fecha.strftime('%Y-%m-%d %H:%M:%S') if venta.fecha else None,
+                'tipo_cafe': venta.tipo_cafe.value if venta.tipo_cafe else None,
                 'cantidad': float(venta.cantidad) if venta.cantidad is not None else None,
                 'precio_kg': float(venta.precio_kg) if venta.precio_kg is not None else None,
-                'total': float(venta.total) if venta.total is not None else None, # Total es generado, debería existir
-                'estado': venta.estado.value if venta.estado else None, # Asumiendo que estado es un Enum
-                'comprador': venta.empresa.nombre if venta.empresa else 'CafExport' # Obtener nombre de la empresa o usar CafExport
+                'total': float(venta.total) if venta.total is not None else None,
+                'estado': venta.estado.value if venta.estado else None,
+                'comprador': venta.empresa.nombre if venta.empresa else 'CafExport'
             })
 
-        return jsonify(ventas_data), 200
+            # Calcular estadísticas
+            total_ventas += 1
+            if venta.estado and venta.estado.value == 'Completada':
+                completadas += 1
+            elif venta.estado and venta.estado.value == 'Pendiente':
+                pendientes += 1
+            if venta.total is not None:
+                total_ingresos += float(venta.total)
+
+        # Calcular promedio
+        promedio = total_ingresos / total_ventas if total_ventas > 0 else 0
+
+        # Preparar respuesta con ventas y estadísticas
+        response_data = {
+            'ventas': ventas_data,
+            'estadisticas': {
+                'total_ventas': total_ventas,
+                'completadas': completadas,
+                'pendientes': pendientes,
+                'total_ingresos': total_ingresos,
+                'promedio': promedio
+            }
+        }
+
+        return jsonify(response_data), 200
 
     except Exception as e:
         import traceback
