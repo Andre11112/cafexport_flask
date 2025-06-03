@@ -88,3 +88,8 @@ def admin_login():
 def admin_dashboard():
     # Aquí podrías añadir lógica para cargar datos del dashboard
     return render_template('admin/admin_dashboard.html')
+
+@auth_bp.route('/admin/reportes')
+@login_required # Protect the route if needed
+def admin_reportes():
+    return render_template('admin/admin_reporte.html')

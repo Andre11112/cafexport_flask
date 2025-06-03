@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Reportes y Analytics{% endblock %}
+
+{% block content %}
+<div class="flex h-screen bg-gray-50">
+    {# Incluir el sidebar de admin #}
+    {% include "admin/sidebar.html" %}
+
+    <!-- Contenido Principal -->
+    <div class="flex-1 overflow-auto min-h-screen">
+        <header class="bg-white shadow">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <h2 class="text-2xl font-bold text-green-800">Reportes y Analytics</h2>
+                <p class="text-sm text-gray-600">Análisis avanzado con Power BI</p>
+            </div>
+        </header>
+
+        <!-- Contenido del Reporte Admin -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row gap-6">
+                {# Sección Reportes Disponibles (Columna Izquierda) #}
+                {# Eliminada para maximizar el espacio del visualizador #}
+                
+                <!-- Sección Visualización de Reporte (Columna Derecha) -->
+                <div class="w-full bg-white rounded-lg shadow p-6 flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Visualización de Reporte</h3>
+                        {# Botones Configurar, Actualizar, Exportar #}
+                        {# Eliminados según solicitud #}
+                    </div>
+                    
+                    <!-- Área para cargar el reporte (iframe) -->
+                    <div class="flex-grow flex items-center justify-center bg-gray-100 rounded-md h-[400px]">
+                        {# El iframe de Power BI se cargará aquí #}
+                        <iframe 
+                            src="https://app.powerbi.com/view?r=eyJrIjoiYTE2ZWU1ZGMtZjJkMS00N2ZhLWE5MTEtZDIzYjk1NjFiODkzIiwidCI6ImZkNzY2ZWRkLThiZWEtNGM5OS04NjcyLTU2ZDFjYWJjMjcwNiIsImMiOjR9"
+                            frameborder="0"
+                            allowFullScreen="true"
+                            class="w-full h-full"
+                        ></iframe>
+                        {# Puedes añadir un placeholder o mensaje de carga si es necesario #}
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
