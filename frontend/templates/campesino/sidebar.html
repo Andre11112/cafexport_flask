@@ -12,11 +12,7 @@
             Inicio
         </a>
         
-        <a href="{{ url_for('campesino.perfil') }}"
-           class="flex items-center px-6 py-3 {% if request.endpoint == 'campesino.perfil' %}bg-green-900{% endif %} text-white hover:bg-green-700 rounded-l-full mt-2">
-            <i class="fas fa-user w-5 h-5 mr-3"></i>
-            Perfil
-        </a>
+    
         
         <a href="{{ url_for('campesino.ventas') }}"
            class="flex items-center px-6 py-3 {% if request.endpoint == 'campesino.ventas' %}bg-green-900{% endif %} text-white hover:bg-green-700 rounded-l-full mt-2">
